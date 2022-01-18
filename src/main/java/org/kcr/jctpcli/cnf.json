@@ -1,0 +1,11 @@
+{
+  "tradeServer": "180.166.103.34:51210",
+  "mdServer": "180.166.103.34:51213",
+  "brokerID": "6666",
+  "accountID": "66658937",
+  "password": "dux123",
+  "appID": "client_Druid_2.0.0",
+  "authCode": "VSHYXEQK2T7EF0XM",
+  "exchangeID": "INE",
+  "symbols": ["rb2112", "b2112", "c2112", "CF2112", "IO2112-P-6000", "rb2202", "au2112C216"]
+}

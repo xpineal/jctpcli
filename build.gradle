@@ -1,0 +1,27 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'java'
+    id 'application'
+}
+
+group 'org.kcr.jctpcli'
+version '1.0.0'
+mainClassName = 'org.kcr.jctpcli.Md'
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation fileTree(dir:"lib", includes:['*.jar', '*.so'])
+    implementation "org.scijava:native-lib-loader:2.4.0"
+    implementation 'org.slf4j:slf4j-simple:1.7.30'
+    implementation 'com.alibaba:fastjson:1.2.79'
+    implementation 'org.jetbrains:annotations:20.1.0'
+}
+
+shadowJar {
+    configurations = [project.configurations.compileClasspath]
+}
