@@ -21,119 +21,127 @@ public class Output {
         return false;
     }
 
+    //打印认证信息
+    public static void pRspAuth(String head, @NotNull CThostFtdcRspAuthenticateField pAuth) {
+        System.out.println(head + " auth ---> :");
+        System.out.printf("经纪公司:%s, 用户:%s, 产品:%s, appID:%s\n",
+                pAuth.getBrokerID(), pAuth.getUserID(), pAuth.getUserProductInfo(), pAuth.getAppID());
+    }
+
     //打印input order
     public static void pInputOrder(String head, @NotNull CThostFtdcInputOrderField pInputOrder) {
-        System.out.println(head + " ---> :");
-        System.out.printf("brokerID:%s, investorID:%s, instrumentID:%s, orderRef:%s, userID:%s, priceType:%c\n",
+        System.out.println(head + "报单录入信息 ---> :");
+        System.out.printf("经纪公司:%s, 投资人:%s, 合约:%s, 报单引用:%s, 用户:%s, 价格类型:%c\n",
                 pInputOrder.getBrokerID(), pInputOrder.getInvestorID(), pInputOrder.getInstrumentID(),
                 pInputOrder.getOrderRef(), pInputOrder.getUserID(), pInputOrder.getOrderPriceType());
-        System.out.printf("direction:%c, offsetFlag:%s, hedgeFlag:%s, limitPrice:%f, volumeTotal:%d, timeCondition:%c\n",
+        System.out.printf("方向:%c, 开平标志:%s, 投机套保标志:%s, 限价:%f, 报单数量:%d, 有效期类型:%c\n",
                 pInputOrder.getDirection(), pInputOrder.getCombOffsetFlag(), pInputOrder.getCombHedgeFlag(),
                 pInputOrder.getLimitPrice(), pInputOrder.getVolumeTotalOriginal(), pInputOrder.getTimeCondition());
-        System.out.printf("gtdDate:%s, volumeCondition:%c, minVolume:%d, contingentCondition:%c, stopPrice:%f, forceCloseReason:%c\n",
+        System.out.printf("GTD日期:%s, 成交量类型:%c, 最小数量:%d, 触发条件:%c, 止损价:%f, 强平原因:%c\n",
                 pInputOrder.getGTDDate(), pInputOrder.getVolumeCondition(), pInputOrder.getMinVolume(),
                 pInputOrder.getContingentCondition(), pInputOrder.getStopPrice(), pInputOrder.getForceCloseReason());
-        System.out.printf("autoSuspend:%d, businessUnit:%s, requestID:%d, userForceClose:%d, isSwapOrder:%d, exchangeID:%s\n",
+        System.out.printf("自动挂起:%d, 业务单元:%s, requestID:%d, 用户强平标志:%d, 互换单标志:%d, 交易所:%s\n",
                 pInputOrder.getIsAutoSuspend(), pInputOrder.getBusinessUnit(), pInputOrder.getRequestID(),
                 pInputOrder.getUserForceClose(), pInputOrder.getIsSwapOrder(), pInputOrder.getExchangeID());
-        System.out.printf("investUnitID:%s, accountID:%s, currencyID:%s, clientID:%s, ipAddress:%s, macAddress:%s\n",
+        System.out.printf("投资单元代码:%s, 账号:%s, 币种:%s, clientID:%s, ipAddress:%s, macAddress:%s\n",
                 pInputOrder.getInvestUnitID(), pInputOrder.getAccountID(), pInputOrder.getCurrencyID(),
                 pInputOrder.getClientID(), pInputOrder.getIPAddress(), pInputOrder.getMacAddress());
+        System.out.println("");
     }
 
     //打印查询的订单信息
     public static void pOrder(String head, @NotNull CThostFtdcOrderField pOrder) {
-        System.out.println(head + "query order ---> :");
+        System.out.println(head + "订单信息 ---> :");
         System.out.printf(
-                "brokerID:%s, investorID:%s, instrumentID:%s, orderRef:%s, userID:%s, priceType:%c, direction:%c\n",
+                "经纪公司:%s, 投资人:%s, 合约:%s, 报单引用:%s, 用户:%s, 价格类型:%c, 方向:%c\n",
                 pOrder.getBrokerID(), pOrder.getInvestorID(), pOrder.getInstrumentID(), pOrder.getOrderRef(),
                 pOrder.getUserID(), pOrder.getOrderPriceType(), pOrder.getDirection());
 
         System.out.printf(
-                "offsetFlag:%s, hedgeFlag:%s, limitPrice:%f, volumeTotal:%d, timeCondition:%c, gtdDate:%s\n",
+                "开平标志:%s, 投机套保标志:%s, 限价:%f, 数量:%d, 有效期类型:%c, GTD日期:%s\n",
                 pOrder.getCombOffsetFlag(), pOrder.getCombHedgeFlag(), pOrder.getLimitPrice(),
                 pOrder.getVolumeTotalOriginal(), pOrder.getTimeCondition(), pOrder.getGTDDate());
 
         System.out.printf(
-                "volumeCondition:%c, minVolume:%d, contingentCondition:%c, stopPrice:%f, forceCloseReason:%c\n",
+                "成交量类型:%c, 最小数量:%d, 触发条件:%c, 止损价:%f, 强平原因:%c\n",
                 pOrder.getVolumeCondition(), pOrder.getMinVolume(), pOrder.getContingentCondition(),
                 pOrder.getStopPrice(), pOrder.getForceCloseReason());
 
         System.out.printf(
-                "autoSuspend:%d, businessUnit:%s, requestID:%d, orderLocalID:%s, exchangeID:%s, participantID:%s\n",
+                "自动挂起:%d, 业务单元:%s, requestID:%d, 本地报单编号:%s, 交易所:%s, 会员代码:%s\n",
                 pOrder.getIsAutoSuspend(), pOrder.getBusinessUnit(), pOrder.getRequestID(), pOrder.getOrderLocalID(),
                 pOrder.getExchangeID(), pOrder.getParticipantID());
 
         System.out.printf(
-                "clientID:%s, instrInExchangeID:%s, traderID:%s, installID:%d, submitStatus:%c, notifySeq:%d\n",
+                "clientID:%s, 合约在交易所的代码:%s, 交易员代码:%s, 安装编号:%d, 报单提交状态:%c, 报单提示序号:%d\n",
                 pOrder.getClientID(), pOrder.getExchangeInstID(), pOrder.getTraderID(), pOrder.getInstallID(),
                 pOrder.getOrderSubmitStatus(), pOrder.getNotifySequence());
 
         System.out.printf(
-                "tradingDay:%s, settleID:%d, orderSysID:%s, orderSource:%c, orderStatus:%c, orderType:%c\n",
+                "交易日:%s, 结算编号:%d, 系统报单编号:%s, orderSource:%c, orderStatus:%c, orderType:%c\n",
                 pOrder.getTradingDay(), pOrder.getSettlementID(), pOrder.getOrderSysID(),
                 pOrder.getOrderSource(), pOrder.getOrderStatus(), pOrder.getOrderType());
 
         System.out.printf(
-                "volTraded:%d, volTotal:%d, insertDate:%s, insertTime:%s, activeTime:%s, suspendTime:%s\n",
+                "今成交数量:%d, 剩余数量:%d, 报单日期:%s, 委托时间:%s, 激活时间:%s, 挂起时间:%s\n",
                 pOrder.getVolumeTraded(), pOrder.getVolumeTotal(), pOrder.getInsertDate(),
                 pOrder.getInsertTime(), pOrder.getActiveTime(), pOrder.getSuspendTime());
 
         System.out.printf(
-                "updateTime:%s, cancelTime:%s, activeTraderID:%s, clearingPartID:%s, seqNo:%d, frontID:%d\n",
+                "更新时间:%s, 取消时间:%s, 最后修改交易所交易员代码:%s, 结算会员编号:%s, 序号:%d, frontID:%d\n",
                 pOrder.getUpdateTime(), pOrder.getCancelTime(), pOrder.getActiveTraderID(),
                 pOrder.getClearingPartID(), pOrder.getSequenceNo(), pOrder.getFrontID());
 
         System.out.printf(
-                "sessionID:%d, productInfo:%s, statusMsg:%s, userForceClose:%d, activeUserID:%s, brokerOrderSeq:%d\n",
+                "sessionID:%d, 产品:%s, 状态信息:%s, 用户强平标志:%d, active用户:%s, 经纪公司报单编号:%d\n",
                 pOrder.getSessionID(), pOrder.getUserProductInfo(), pOrder.getStatusMsg(),
                 pOrder.getUserForceClose(), pOrder.getActiveUserID(), pOrder.getBrokerOrderSeq());
 
         System.out.printf(
-                "relativeOrderSysID:%s, ZCETotalTradedVol:%d, isSwapOrder:%d, branchID:%s, investUnitID:%s\n",
+                "相关报单:%s, 郑商所成交数量:%d, 互换单标志:%d, 营业部编号:%s, 投资单元代码:%s\n",
                 pOrder.getRelativeOrderSysID(), pOrder.getZCETotalTradedVolume(), pOrder.getIsSwapOrder(),
                 pOrder.getBranchID(), pOrder.getInvestUnitID());
 
         System.out.printf(
-                "accountID:%s, currencyID:%s, ipAddress:%s, macAddress:%s\n",
+                "账号:%s, 币种:%s, ipAddress:%s, macAddress:%s\n",
                 pOrder.getAccountID(), pOrder.getCurrencyID(), pOrder.getIPAddress(), pOrder.getMacAddress());
         System.out.println("");
     }
 
     //打印查询的交易信息
     public static void pTrade(String head, @NotNull CThostFtdcTradeField pTrade) {
-        System.out.println(head + "query trade ---> :");
+        System.out.println(head + "交易信息 ---> :");
         System.out.printf(
-                "brokerID:%s, investorID:%s, instrumentID:%s, orderRef:%s, userID:%s, exchangeID:%s, tradeID:%s\n",
+                "经纪公司:%s, 投资人:%s, 合约:%s, 报单引用:%s, 用户:%s, 交易所:%s, 成交编号:%s\n",
                 pTrade.getBrokerID(), pTrade.getInvestorID(), pTrade.getInstrumentID(), pTrade.getOrderRef(),
                 pTrade.getUserID(), pTrade.getExchangeID(), pTrade.getTradeID());
 
         System.out.printf(
-                "direction:%c, orderSysID:%s, participantID:%s, clientID:%s, tradingRole:%c, instrInExchangeID:%s\n",
+                "方向:%c, 系统报单编号:%s, 会员代码:%s, clientID:%s, 交易角色:%c, 合约在交易所的代码:%s\n",
                 pTrade.getDirection(), pTrade.getOrderSysID(), pTrade.getParticipantID(),
                 pTrade.getClientID(), pTrade.getTradingRole(), pTrade.getExchangeInstID());
 
         System.out.printf(
-                "offsetFlag:%c, hedgeFlag:%c, price:%f, volume:%d, tradeDate:%s, tradeTime:%s, tradeType:%c\n",
+                "开平标志:%c, 投机套保标志:%c, 成交价格:%f, 数量:%d, 成交时期:%s, 成交时间:%s, 成交类型:%c\n",
                 pTrade.getOffsetFlag(), pTrade.getHedgeFlag(), pTrade.getPrice(), pTrade.getVolume(),
                 pTrade.getTradeDate(), pTrade.getTradeTime(), pTrade.getTradeType());
 
         System.out.printf(
-                "priceSource:%c, tradeID:%s, orderLocalID:%s, clearingPartID:%s, businessUnit:%s, seqNo:%d\n",
+                "成交价来源:%c, 成交编号:%s, 本地报单编号:%s, 结算会员编号:%s, 业务单元:%s, 序号:%d\n",
                 pTrade.getPriceSource(), pTrade.getTradeID(), pTrade.getOrderLocalID(), pTrade.getClearingPartID(),
                 pTrade.getBusinessUnit(), pTrade.getSequenceNo());
 
         System.out.printf(
-                "tradingDay:%s, settleID:%d, brokerOrderSeq:%d, tradeSource:%c\n",
+                "交易日:%s, 结算编号:%d, 经纪公司报单编号:%d, 成交来源:%c\n",
                 pTrade.getTradingDay(), pTrade.getSettlementID(), pTrade.getBrokerOrderSeq(), pTrade.getTradeSource());
         System.out.println("");
     }
 
     //打印查询投资者持仓
     public static void pInvestorPosition(String head, @NotNull CThostFtdcInvestorPositionField info) {
-        System.out.println(head + "query investor position ---> :");
+        System.out.println(head + "投资者持仓 ---> :");
         System.out.printf(
-                "instrumentID:%s, brokerID:%s, investorID:%s, 持仓多空方向:%c, 投机套保标志:%c, 持仓日期标志:%c, 上日持仓:%d\n",
+                "合约:%s, 经纪公司:%s, 投资人:%s, 持仓多空方向:%c, 投机套保标志:%c, 持仓日期标志:%c, 上日持仓:%d\n",
                 info.getInstrumentID(), info.getBrokerID(), info.getInvestorID(), info.getPosiDirection(),
                 info.getHedgeFlag(), info.getPositionDate(), info.getYdPosition());
 
@@ -167,9 +175,9 @@ public class Output {
 
     //打印查询的账户信息
     public static void pTradingAccount(String head, @NotNull CThostFtdcTradingAccountField account) {
-        System.out.println(head + "query account ---> :");
+        System.out.println(head + "账户信息 ---> :");
         System.out.printf(
-                "交易日:%s, brokerID:%s, accountID:%s, 上次质押金额:%f, 上次信用额度:%f, 上次存款额:%f, 上次结算准备金:%f, 上次占用的保证金:%f\n",
+                "交易日:%s, 经纪公司:%s, 账号:%s, 上次质押金额:%f, 上次信用额度:%f, 上次存款额:%f, 上次结算准备金:%f, 上次占用的保证金:%f\n",
                 account.getTradingDay(), account.getBrokerID(), account.getAccountID(), account.getPreMortgage(),
                 account.getPreCredit(), account.getPreDeposit(), account.getPreBalance(), account.getPreMargin());
 
@@ -207,9 +215,9 @@ public class Output {
 
     //打印查询的投资者信息
     public static void pInvestor(String head, @NotNull CThostFtdcInvestorField account) {
-        System.out.println(head + "query investor ---> :");
+        System.out.println(head + "投资者信息 ---> :");
         System.out.printf(
-                "brokerID:%s, investorID:%s, 分组代码:%s, Name:%s, ID类:%c, ID:%s, 是否活跃:%d\n",
+                "经纪公司:%s, 投资人:%s, 分组代码:%s, Name:%s, ID类:%c, ID:%s, 是否活跃:%d\n",
                 account.getBrokerID(), account.getInvestorID(), account.getInvestorGroupID(), account.getInvestorName(),
                 account.getIdentifiedCardType(), account.getIdentifiedCardNo(), account.getIsActive());
 
@@ -222,49 +230,66 @@ public class Output {
 
     //打印查询的交易编码
     public static void pTradingCode(String head, @NotNull CThostFtdcTradingCodeField tc) {
-        System.out.println(head + "query trading code ---> :");
+        System.out.println(head + "交易编码 ---> :");
         System.out.printf(
-                "brokerID:%s, investorID:%s, exchangeID:%s, clientID:%s, isActive:%c, clientIDType:%c\n",
-                tc.getBrokerID(), tc.getInvestorID(), tc.getExchangeID(), tc.getClientID(), tc.getClientIDType());
+                "经纪公司:%s, 投资人:%s, 交易所:%s, clientID:%s, 是否活跃:%d, clientIDType:%c\n",
+                tc.getBrokerID(), tc.getInvestorID(), tc.getExchangeID(), tc.getClientID(), tc.getIsActive(),
+                tc.getClientIDType());
+        System.out.println("");
     }
 
     //打印查询的合约保证金率
     public static void pInstrumentMarginRate(String head, @NotNull CThostFtdcInstrumentMarginRateField tc) {
-        System.out.println(head + "query instrument margin rate ---> :");
+        System.out.println(head + "合约保证金率 ---> :");
         System.out.printf(
-                "instrumentID:%s, 投资者范围:%c, brokerID:%s, investorID:%s\n",
+                "合约:%s, 投资者范围:%c, 经纪公司:%s, 投资人:%s\n",
                 tc.getInstrumentID(), tc.getInvestorRange(), tc.getBrokerID(), tc.getInvestorID());
         System.out.printf(
-                "hedgeFlag:%c, 多头保证金率:%f, 多头保证金费:%f, 空头保证金率:%f, 空头保证金费:%f, 是否相对交易所收取:%d\n",
+                "投机套保标志:%c, 多头保证金率:%f, 多头保证金费:%f, 空头保证金率:%f, 空头保证金费:%f, 是否相对交易所收取:%d\n",
                 tc.getHedgeFlag(), tc.getLongMarginRatioByMoney(), tc.getLongMarginRatioByVolume(),
                 tc.getShortMarginRatioByMoney(), tc.getShortMarginRatioByVolume(), tc.getIsRelative());
+        System.out.println("");
     }
 
     //打印查询的合约手续费率
     public static void pInstrumentCommissionRate(String head, @NotNull CThostFtdcInstrumentCommissionRateField tc) {
-        System.out.println(head + "query instrument commission rate ---> :");
+        System.out.println(head + "合约手续费率 ---> :");
         System.out.printf(
-                "instrumentID:%s, 投资者范围:%c, brokerID:%s, investorID:%s\n",
+                "合约:%s, 投资者范围:%c, 经纪公司:%s, 投资人:%s\n",
                 tc.getInstrumentID(), tc.getInvestorRange(), tc.getBrokerID(), tc.getInvestorID());
         System.out.printf(
                 "开仓手续费率:%f, 开仓手续费:%f, 平仓手续费率:%f, 平仓手续费:%f, 平今手续费率:%f, 平今手续费:%f\n",
                 tc.getOpenRatioByMoney(), tc.getOpenRatioByVolume(), tc.getCloseRatioByMoney(),
                 tc.getCloseRatioByVolume(), tc.getCloseTodayRatioByMoney(), tc.getCloseTodayRatioByVolume());
+        System.out.println("");
+    }
+
+    //打印查询的报单手续费
+    public static void pInstrumentCommRate(String head, @NotNull CThostFtdcInstrumentOrderCommRateField tc) {
+        System.out.println(head + "报单手续费 ---> :");
+        System.out.printf(
+                "合约:%s, 投资者范围:%c, 经纪公司:%s, 投资人:%s\n",
+                tc.getInstrumentID(), tc.getInvestorRange(), tc.getBrokerID(), tc.getInvestorID());
+        System.out.printf(
+                "投机套保标志:%c, 报单手续费:%f, 撤单手续费:%f\n",
+                tc.getHedgeFlag(), tc.getOrderCommByVolume(), tc.getOrderActionCommByVolume());
+        System.out.println("");
     }
 
     //打印查询的交易所
     public static void pExchange(String head, @NotNull CThostFtdcExchangeField tc) {
-        System.out.println(head + "query exchange ---> :");
+        System.out.println(head + "交易所 ---> :");
         System.out.printf(
-                "exchangeID:%s, 交易所名称:%c, 交易所属性:%s\n",
+                "交易所:%s, 交易所名称:%s, 交易所属性:%s\n",
                 tc.getExchangeID(), tc.getExchangeName(), tc.getExchangeProperty());
+        System.out.println("");
     }
 
     //打印查询的合约
     public static void pInstrument(String head, @NotNull CThostFtdcInstrumentField tc) {
-        System.out.println(head + "query instrument ---> :");
+        System.out.println(head + "合约 ---> :");
         System.out.printf(
-                "instrumentID:%s, exchangeID:%s, 合约名称:%s, 合约在交易所的代码:%s\n",
+                "合约:%s, 交易所:%s, 合约名称:%s, 合约在交易所的代码:%s\n",
                 tc.getInstrumentID(), tc.getExchangeID(), tc.getInstrumentName(), tc.getExchangeInstID());
 
         System.out.printf(
@@ -292,9 +317,9 @@ public class Output {
 
     //打印查询的合约状态
     public static void pInstrumentStatus(String head, @NotNull CThostFtdcInstrumentStatusField tc) {
-        System.out.println(head + "query instrument status ---> :");
+        System.out.println(head + "合约状态 ---> :");
         System.out.printf(
-                "instrumentID:%s, exchangeID:%s, 结算组代码:%s, 合约在交易所的代码:%s\n",
+                "合约:%s, 交易所:%s, 结算组代码:%s, 合约在交易所的代码:%s\n",
                 tc.getInstrumentID(), tc.getExchangeID(), tc.getSettlementGroupID(), tc.getExchangeInstID());
 
         System.out.printf(
@@ -305,9 +330,9 @@ public class Output {
 
     //打印查询投资者持仓明细
     public static void pInvestorPositionDetail(String head, @NotNull CThostFtdcInvestorPositionDetailField info) {
-        System.out.println(head + "query investor position detail ---> :");
+        System.out.println(head + "投资者持仓明细 ---> :");
         System.out.printf(
-                "交易日:%s, instrumentID:%s, exchangeID:%s, brokerID:%s, investorID:%s, 持仓多空方向:%c, 投机套保标志:%c\n",
+                "交易日:%s, 合约:%s, 交易所:%s, 经纪公司:%s, 投资人:%s, 持仓多空方向:%c, 投机套保标志:%c\n",
                 info.getTradingDay(), info.getInstrumentID(), info.getExchangeID(), info.getBrokerID(),
                 info.getInvestorID(), info.getDirection(), info.getHedgeFlag());
 
@@ -331,12 +356,12 @@ public class Output {
 
     //打印查询的交易所保证金率
     public static void pExchangeMarginRate(String head, @NotNull CThostFtdcExchangeMarginRateField tc) {
-        System.out.println(head + "query exchange margin rate ---> :");
+        System.out.println(head + "交易所保证金率 ---> :");
         System.out.printf(
-                "instrumentID:%s, brokerID:%s\n",
+                "合约:%s, 经纪公司:%s\n",
                 tc.getInstrumentID(),tc.getBrokerID());
         System.out.printf(
-                "hedgeFlag:%c, 多头保证金率:%f, 多头保证金费:%f, 空头保证金率:%f, 空头保证金费:%f\n",
+                "投机套保标志:%c, 多头保证金率:%f, 多头保证金费:%f, 空头保证金率:%f, 空头保证金费:%f\n",
                 tc.getHedgeFlag(), tc.getLongMarginRatioByMoney(), tc.getLongMarginRatioByVolume(),
                 tc.getShortMarginRatioByMoney(), tc.getShortMarginRatioByVolume());
         System.out.println("");
@@ -344,9 +369,9 @@ public class Output {
 
     //打印查询的调整保证金率
     public static void pExchangeMarginRateAdjust(String head, @NotNull CThostFtdcExchangeMarginRateAdjustField tc) {
-        System.out.println(head + "query exchange margin rate ---> :");
+        System.out.println(head + "交易所调整保证金率 ---> :");
         System.out.printf(
-                "instrumentID:%s, brokerID:%s, hedgeFlag:%c\n",
+                "合约:%s, 经纪公司:%s, 投机套保标志:%c\n",
                 tc.getInstrumentID(),tc.getBrokerID(), tc.getHedgeFlag());
         System.out.printf(
                 "跟随交易所投资者  多头保证金率:%f, 多头保证金费:%f, 空头保证金率:%f, 空头保证金费:%f\n",
@@ -368,18 +393,18 @@ public class Output {
     //打印登录信息
     public static void pLoginInfo(String head, @NotNull CThostFtdcRspUserLoginField info) {
         System.out.printf(
-                "%s --> :\nfrontID:%d, sessionID:%d, tradingDay:%s, brokerID:%s, userID:%s, systemName:%s, maxOrderRef:%s, "+
+                "%s --> :\nfrontID:%d, sessionID:%d, 交易日:%s, 经纪公司:%s, 用户:%s, systemName:%s, max报单引用:%s, "+
                         "loginTime:%s, SHFETime:%s, DCETime:%s, CZCETime:%s, CFFEXTime:%s, INETime:%s\n", head,
                 info.getFrontID(), info.getSessionID(), info.getTradingDay(), info.getBrokerID(), info.getUserID(),
-                info.getSystemName(), info.getMaxOrderRef(),
-
-                info.getLoginTime(), info.getSHFETime(), info.getDCETime(), info.getCZCETime(), info.getFFEXTime(),
-                info.getINETime());
+                info.getSystemName(), info.getMaxOrderRef(), info.getLoginTime(), info.getSHFETime(),
+                info.getDCETime(), info.getCZCETime(), info.getFFEXTime(), info.getINETime());
+        System.out.println("");
     }
 
     //打印合约ID
     public static void pSpecificInstrument(String head, @NotNull CThostFtdcSpecificInstrumentField instrument) {
         System.out.printf("%s instrumentID: %s\n", head, instrument.getInstrumentID());
+        System.out.println("");
     }
 
     //打印深度行情
@@ -387,8 +412,12 @@ public class Output {
         if (pd == null) {
             System.out.printf("%s : OnRtnDepthMarketData empty\n", head);
         }else{
-            System.out.println(head + " ---> :");
-            System.out.printf("交易日:%s, 业务日期:%s, 最后修改时间:%s, 最后修改毫秒:%d\n",
+            System.out.println(head + " 深度行情---> :");
+            System.out.printf("时间:%s, 合约代码:%s, 最新价:%f, 买一价:%f -- :%d, 卖一价:%f -- :%d\n",
+                    pd.getUpdateTime(), pd.getInstrumentID(), pd.getLastPrice(), pd.getBidPrice1(), pd.getBidVolume1(),
+                    pd.getAskPrice1(), pd.getAskVolume1());
+
+            /*System.out.printf("交易日:%s, 业务日期:%s, 最后修改时间:%s, 最后修改毫秒:%d\n",
                     pd.getTradingDay(), pd.getActionDay(), pd.getUpdateTime(), pd.getUpdateMillisec());
             System.out.printf("合约代码:%s, 交易所代码:%s, 合约在交易所的代码:%s, 最新价:%f, 上次结算价:%f\n",
                     pd.getInstrumentID(), pd.getExchangeID(), pd.getExchangeInstID(),
@@ -411,44 +440,60 @@ public class Output {
             System.out.printf("卖一价:%f -- :%d, 卖二价:%f -- :%d, 卖三价:%f -- :%d, 卖四价:%f -- :%d, 卖五价:%f -- :%d\n",
                     pd.getAskPrice1(), pd.getAskVolume1(), pd.getAskPrice2(), pd.getAskVolume2(),
                     pd.getAskPrice3(), pd.getAskVolume3(), pd.getAskPrice4(), pd.getAskVolume4(),
-                    pd.getAskPrice5(), pd.getAskVolume5());
+                    pd.getAskPrice5(), pd.getAskVolume5());*/
 
             System.out.println("");
         }
     }
 
     //打印撤单信息
-    public static void pInputOrderAction(String head, CThostFtdcInputOrderActionField act) {
-        System.out.println(head + " input order action ---> :");
+    public static void pInputOrderAction(String head, @NotNull CThostFtdcInputOrderActionField act) {
+        System.out.println(head + " 录入的撤单信息 ---> :");
         System.out.printf(
-                "brokerID:%s, investorID:%s, orderActionRef:%d, orderRef:%s, requestID:%d, frontID:%d, sessionID:%d\n",
+                "经纪公司:%s, 投资人:%s, 报单操作引用:%d, 报单引用:%s, requestID:%d, frontID:%d, sessionID:%d\n",
                 act.getBrokerID(), act.getInvestorID(), act.getOrderActionRef(), act.getOrderRef(), act.getRequestID(),
                 act.getFrontID(), act.getSessionID());
 
         System.out.printf(
-                "exchangeID:%s, orderSysID:%s, actionFlag:%c, limitPrice:%f, volChange:%d, userID:%s, instrumentID:%s\n",
+                "交易所:%s, 系统报单编号:%s, 操作标志:%c, 限价:%f, 数量变化:%d, 用户:%s, 合约:%s\n",
                 act.getExchangeID(), act.getOrderSysID(), act.getActionFlag(), act.getLimitPrice(),
                 act.getVolumeChange(), act.getUserID(), act.getInstrumentID());
 
-        System.out.printf("investUnitID:%s, ipAddress:%s, macAddress:%s\n",
+        System.out.printf("投资单元代码:%s, ipAddress:%s, macAddress:%s\n",
                 act.getInvestUnitID(), act.getIPAddress(), act.getMacAddress());
+        System.out.println("");
     }
 
     //打印撤单信息
-    public static void pOrderAction(String head, CThostFtdcOrderActionField act) {
-        System.out.println(head + " order action ---> :");
+    public static void pOrderAction(String head, @NotNull CThostFtdcOrderActionField act) {
+        System.out.println(head + " 撤单信息 ---> :");
         System.out.printf(
-                "brokerID:%s, investorID:%s, orderActionRef:%d, orderRef:%s, requestID:%d, frontID:%d, sessionID:%d\n",
+                "经纪公司:%s, 投资人:%s, 报单操作引用:%d, 报单引用:%s, requestID:%d, frontID:%d, sessionID:%d\n",
                 act.getBrokerID(), act.getInvestorID(), act.getOrderActionRef(), act.getOrderRef(), act.getRequestID(),
                 act.getFrontID(), act.getSessionID());
 
         System.out.printf(
-                "exchangeID:%s, orderSysID:%s, actionFlag:%c, limitPrice:%f, volChange:%d, actionDate:%s, actionTime:%s\n",
+                "交易所:%s, 系统报单编号:%s, 操作标志:%c, 限价:%f, 数量变化:%d, 操作日期:%s, 操作时间:%s\n",
                 act.getExchangeID(), act.getOrderSysID(), act.getActionFlag(), act.getLimitPrice(),
                 act.getVolumeChange(), act.getActionDate(), act.getActionTime());
 
-        System.out.printf("traderID:%s, installID:%d, userID:%s, instrumentID:%s, investUnitID:%s, ipAddress:%s, macAddress:%s\n",
+        System.out.printf("交易员代码:%s, 安装编号:%d, 用户:%s, 合约:%s, 投资单元代码:%s, ipAddress:%s, macAddress:%s\n",
                 act.getTraderID(), act.getInstallID(), act.getUserID(), act.getInstrumentID(), act.getInvestUnitID(),
                 act.getIPAddress(), act.getMacAddress());
+        System.out.println("");
+    }
+
+    //打印组合单腿汇总
+    public static void pInvestorPositionForComb(String head, @NotNull CThostFtdcInvestorPositionForCombField act) {
+        System.out.println(head + " 组合单腿汇总 ---> :");
+        System.out.printf(
+                "交易所:%s, 经纪公司:%s, 投资人:%s, 合约代码:%s, 投机套保标志:%c, 买卖方向:%c, 数量:%d, 单腿编号:%d\n",
+                act.getExchangeID(), act.getBrokerID(), act.getInvestorID(), act.getLegInstrumentID(),
+                act.getLegHedgeFlag(), act.getLegDirection(), act.getTotalAmt(), act.getLegID());
+
+        System.out.printf(
+                "组合优先级:%s, 组合合约代码:%s, 组合投机套保标志:%c, 组合类型:%c\n",
+                act.getTradeGroupID(), act.getCombInstrumentID(), act.getCombHedgeFlag(), act.getCombinationType());
+        System.out.println("");
     }
 }

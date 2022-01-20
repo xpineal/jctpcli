@@ -22,6 +22,10 @@ class TraderReq {
 
     public int requestID;
     public int resultCode;
+
+    public void outConsole(String head) {
+        Output.pRequest(head, this);
+    }
 }
 
 class OrderReq {
@@ -42,6 +46,10 @@ class OrderReq {
     public int requestID;
     public int resultCode;
     public String orderRef;
+
+    public void outConsole() {
+        System.out.printf("报单 单号:%s 请求:%d -- 回应:%d\n", orderRef, requestID, resultCode);
+    }
 }
 
 class OrderCond {
@@ -58,7 +66,7 @@ class OrderCond {
     }
 
     //开限价单
-    public static void FAKLimitPrice(CThostFtdcInputOrderField input) {
+    public static void FAKLimitPrice(@NotNull CThostFtdcInputOrderField input) {
         OrderCond cond;
         switch (input.getExchangeID()){
             case SHFE:
@@ -83,7 +91,7 @@ class OrderCond {
     }
 
     //开市价单
-    public static void FAKAnyPrice(CThostFtdcInputOrderField input) {
+    public static void FAKAnyPrice(@NotNull CThostFtdcInputOrderField input) {
         OrderCond cond;
         switch (input.getExchangeID()){
             case CFFEX:
@@ -104,8 +112,33 @@ class OrderCond {
         SetCond(input, cond);
     }
 
+    //开限价单
+    public static void GFDLimitPrice(@NotNull CThostFtdcInputOrderField input) {
+        OrderCond cond;
+        switch (input.getExchangeID()){
+            case SHFE:
+                cond = LimitPrice_SHFE;
+                break;
+            case CFFEX:
+                cond = LimitPrice_CFFEX;
+                break;
+            case DCE:
+                cond = LimitPrice_DCE;
+                break;
+            case CZCE:
+                cond = LimitPrice_CZCE;
+                break;
+            case INE:
+                cond = LimitPrice_INE;
+                break;
+            default:
+                return;
+        }
+        SetCond(input, cond);
+    }
+
     //设置订单条件
-    public static void SetCond(CThostFtdcInputOrderField input, OrderCond cond) {
+    public static void SetCond(@NotNull CThostFtdcInputOrderField input, OrderCond cond) {
         input.setOrderPriceType(cond.OrderPriceType);
         input.setContingentCondition(cond.ContingentCondition);
         input.setTimeCondition(cond.TimeCondition);
@@ -328,6 +361,57 @@ public class TraderCall {
         return order;
     }
 
+    //生成限价平买单(做多)报单的对象
+    public CThostFtdcInputOrderField genLimitPriceCloseBuyOrder(
+            String exchangeID, String instrumentID, double price, int vol) {
+        var order = genOrder(exchangeID, instrumentID, Close, vol, false);
+        order.setLimitPrice(price);
+        OrderCond.FAKLimitPrice(order);
+        return order;
+    }
+
+    //生成市价平买单(做多)报单的对象
+    public CThostFtdcInputOrderField genAnyPriceCloseBuyOrder(String exchangeID, String instrumentID, int vol) {
+        var order = genOrder(exchangeID, instrumentID, Close, vol, false);
+        OrderCond.FAKAnyPrice(order);
+        return order;
+    }
+
+    //生成限价平卖单(做空)报单的对象
+    public CThostFtdcInputOrderField genLimitPriceCloseSellOrder(
+            String exchangeID, String instrumentID, double price, int vol) {
+        var order = genOrder(exchangeID, instrumentID, Close, vol, true);
+        order.setLimitPrice(price);
+        OrderCond.FAKLimitPrice(order);
+        return order;
+    }
+
+    //生成市价平卖单(做空)报单的对象
+    public CThostFtdcInputOrderField genAnyPriceCloseSellOrder(
+            String exchangeID, String instrumentID, int vol) {
+        var order = genOrder(exchangeID, instrumentID, Close, vol, true);
+        OrderCond.FAKAnyPrice(order);
+        return order;
+    }
+
+    //生成当天有效限价开买单(做多)报单的对象
+    public CThostFtdcInputOrderField genGFDLimitPriceOpenBuyOrder(
+            String exchangeID, String instrumentID, double price, int vol) {
+        var order = genOrder(exchangeID, instrumentID, Open, vol, true);
+        order.setLimitPrice(price);
+        OrderCond.GFDLimitPrice(order);
+        return order;
+    }
+
+    //生成限价开卖单(做空)报单的对象
+    public CThostFtdcInputOrderField genGtdLimitPriceOpenSellOrder(
+            String exchangeID, String instrumentID, double price, int vol) {
+        var order = genOrder(exchangeID, instrumentID, Open, vol, false);
+        order.setLimitPrice(price);
+        OrderCond.FAKLimitPrice(order);
+        return order;
+    }
+
     //生成订单的对象
     public CThostFtdcInputOrderField genOrder(
             String exchangeID, String instrumentID, String combOffsetFlag, int vol, boolean buy) {
@@ -351,12 +435,11 @@ public class TraderCall {
     }
 
     //生成撤单的对象
-    public CThostFtdcInputOrderActionField genCancelOrder(
-            String orderRef, int frontID, int sessionID) {
+    public CThostFtdcInputOrderActionField genCancelOrder(String orderRef) {
         var action = new CThostFtdcInputOrderActionField();
         action.setOrderRef(orderRef);
-        action.setFrontID(frontID);
-        action.setSessionID(sessionID);
+        action.setFrontID(this.frontIDAtom.get());
+        action.setSessionID(this.sessionIDAtom.get());
         action.setActionFlag(jctpConstants.THOST_FTDC_AF_Delete);
         return action;
     }
@@ -636,6 +719,87 @@ public class TraderCall {
         return r;
     }
 
+    //限价开买单(做多)
+    public OrderReq addLimitPriceOpenBuyOrder(
+            String exchangeID, String instrumentID, double price, int vol) {
+        var order = genLimitPriceOpenBuyOrder(exchangeID, instrumentID, price, vol);
+        return addOrder(order);
+    }
+
+    //市价开买单(做多)
+    public OrderReq addAnyPriceOpenBuyOrder(String exchangeID, String instrumentID, int vol) {
+        var order = genAnyPriceOpenBuyOrder(exchangeID, instrumentID, vol);
+        return addOrder(order);
+    }
+
+    //限价开卖单(做空)
+    public OrderReq addLimitPriceOpenSellOrder(
+            String exchangeID, String instrumentID, double price, int vol) {
+        var order = genLimitPriceOpenSellOrder(exchangeID, instrumentID, price, vol);
+        return addOrder(order);
+    }
+
+    //市价开卖单(做空)
+    public OrderReq addAnyPriceOpenSellOrder(
+            String exchangeID, String instrumentID, int vol) {
+        var order = genAnyPriceOpenSellOrder(exchangeID, instrumentID, vol);
+        return addOrder(order);
+    }
+
+    //限价平做多买单
+    public OrderReq addLimitPriceCloseBuyOrder(
+            String exchangeID, String instrumentID, double price, int vol) {
+        var order = genLimitPriceCloseBuyOrder(exchangeID, instrumentID, price, vol);
+        return addOrder(order);
+    }
+
+    //市价平做多买单
+    public OrderReq addAnyPriceCloseBuyOrder(String exchangeID, String instrumentID, int vol) {
+        var order = genAnyPriceCloseBuyOrder(exchangeID, instrumentID, vol);
+        return addOrder(order);
+    }
+
+    //限价平做空卖单
+    public OrderReq addLimitPriceCloseSellOrder(
+            String exchangeID, String instrumentID, double price, int vol) {
+        var order = genLimitPriceCloseSellOrder(exchangeID, instrumentID, price, vol);
+        return addOrder(order);
+    }
+
+    //市价平做空卖单
+    public OrderReq addAnyPriceCloseSellOrder(
+            String exchangeID, String instrumentID, int vol) {
+        var order = genAnyPriceCloseSellOrder(exchangeID, instrumentID, vol);
+        return addOrder(order);
+    }
+
+    //当天限价开买单(做多)
+    public OrderReq addGFDLimitPriceOpenBuyOrder(
+            String exchangeID, String instrumentID, double price, int vol) {
+        var order = genGFDLimitPriceOpenBuyOrder(exchangeID, instrumentID, price, vol);
+        return addOrder(order);
+    }
+
+    //撤单
+    public OrderReq cancelOrder(CThostFtdcInputOrderActionField order) {
+        var r = new OrderReq(reqIDAtom.getAndIncrement(), order.getOrderRef());
+        r.resultCode = traderApi.ReqOrderAction(order, r.requestID);
+        return r;
+    }
+
+    //撤单
+    public OrderReq cancelOrder(String orderRef) {
+        var order = genCancelOrder(orderRef);
+        return cancelOrder(order);
+    }
+
+    //撤单
+    public OrderReq cancelOrder(
+            String exchangeID, String orderSysID, String instrumentID) {
+        var order = genCancelOrder(exchangeID, orderSysID, instrumentID);
+        return cancelOrder(order);
+    }
+
     //查询报单信息
     public TraderReq queryOrder(CThostFtdcQryOrderField qry) {
         var r = genReq();
@@ -762,6 +926,25 @@ public class TraderCall {
         return r;
     }
 
+    //生成查询合约的对象
+    public TraderReq queryInstrument(
+            String instrumentID, String exchangeID, String instrIDInExchange, String productID) {
+        var qry = genQryInstrument(instrumentID, exchangeID, instrIDInExchange, productID);
+        return queryInstrument(qry);
+    }
+
+    //生成查询合约的对象
+    public TraderReq queryInstrument(String instrumentID, String exchangeID) {
+        var qry = genQryInstrument(instrumentID, exchangeID);
+        return queryInstrument(qry);
+    }
+
+    //生成查询合约的对象
+    public TraderReq queryInstrument(String instrumentID) {
+        var qry = genQryInstrument(instrumentID);
+        return queryInstrument(qry);
+    }
+
     //查询行情
     public TraderReq queryDepthMarketData(CThostFtdcQryDepthMarketDataField qry) {
         var r = genReq();
@@ -816,7 +999,7 @@ public class TraderCall {
     }
 
     //查询持仓明细
-    public TraderReq queryInvestorPositionDetail(int rID) {
+    public TraderReq queryInvestorPositionDetail() {
         var qry = genQryInvestorPositionDetail();
         var r = genReq();
         r.resultCode = traderApi.ReqQryInvestorPositionDetail(qry, r.requestID);
