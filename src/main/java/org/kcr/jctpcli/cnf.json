@@ -6,11 +6,7 @@
   "password": "dux123",
   "appID": "client_Druid_2.0.0",
   "authCode": "VSHYXEQK2T7EF0XM",
-  "exchangeID": "CZCE",
   "instruments":[
-    {"instrumentID":"MA205", "exchangeID":"CZCE"},
-    {"instrumentID":"TA205", "exchangeID":"CZCE"},
-    {"instrumentID":"i2205", "exchangeID":"CZCE"},
-    {"instrumentID":"l2205", "exchangeID":"CZCE"}
+    {"instrumentID":"m2205", "exchangeID":"DCE"}
   ]
 }

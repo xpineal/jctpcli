@@ -370,6 +370,15 @@ public class TraderCall {
         return order;
     }
 
+    //生成限价平买单(做多)报单的对象
+    public CThostFtdcInputOrderField genLimitPriceCloseBuyOrder(
+            String exchangeID, String instrumentID, double price, int vol, String closeFlag) {
+        var order = genOrder(exchangeID, instrumentID, closeFlag, vol, false);
+        order.setLimitPrice(price);
+        OrderCond.FAKLimitPrice(order);
+        return order;
+    }
+
     //生成市价平买单(做多)报单的对象
     public CThostFtdcInputOrderField genAnyPriceCloseBuyOrder(String exchangeID, String instrumentID, int vol) {
         var order = genOrder(exchangeID, instrumentID, Close, vol, false);
@@ -381,6 +390,15 @@ public class TraderCall {
     public CThostFtdcInputOrderField genLimitPriceCloseSellOrder(
             String exchangeID, String instrumentID, double price, int vol) {
         var order = genOrder(exchangeID, instrumentID, Close, vol, true);
+        order.setLimitPrice(price);
+        OrderCond.FAKLimitPrice(order);
+        return order;
+    }
+
+    //生成限价平卖单(做空)报单的对象
+    public CThostFtdcInputOrderField genLimitPriceCloseSellOrder(
+            String exchangeID, String instrumentID, double price, int vol, String closeFlag) {
+        var order = genOrder(exchangeID, instrumentID, closeFlag, vol, true);
         order.setLimitPrice(price);
         OrderCond.FAKLimitPrice(order);
         return order;
@@ -753,6 +771,13 @@ public class TraderCall {
         return addOrder(order);
     }
 
+    //限价平做多买单
+    public OrderReq addLimitPriceCloseBuyOrder(
+            String exchangeID, String instrumentID, double price, int vol, String closeFlag) {
+        var order = genLimitPriceCloseBuyOrder(exchangeID, instrumentID, price, vol, closeFlag);
+        return addOrder(order);
+    }
+
     //市价平做多买单
     public OrderReq addAnyPriceCloseBuyOrder(String exchangeID, String instrumentID, int vol) {
         var order = genAnyPriceCloseBuyOrder(exchangeID, instrumentID, vol);
@@ -763,6 +788,13 @@ public class TraderCall {
     public OrderReq addLimitPriceCloseSellOrder(
             String exchangeID, String instrumentID, double price, int vol) {
         var order = genLimitPriceCloseSellOrder(exchangeID, instrumentID, price, vol);
+        return addOrder(order);
+    }
+
+    //限价平做空卖单
+    public OrderReq addLimitPriceCloseSellOrder(
+            String exchangeID, String instrumentID, double price, int vol, String closeFlag) {
+        var order = genLimitPriceCloseSellOrder(exchangeID, instrumentID, price, vol, closeFlag);
         return addOrder(order);
     }
 
@@ -781,7 +813,7 @@ public class TraderCall {
     }
 
     //撤单
-    public OrderReq cancelOrder(CThostFtdcInputOrderActionField order) {
+    public OrderReq cancelOrder(@NotNull CThostFtdcInputOrderActionField order) {
         var r = new OrderReq(reqIDAtom.getAndIncrement(), order.getOrderRef());
         r.resultCode = traderApi.ReqOrderAction(order, r.requestID);
         return r;

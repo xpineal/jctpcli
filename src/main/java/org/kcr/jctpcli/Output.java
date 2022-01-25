@@ -21,6 +21,16 @@ public class Output {
         return false;
     }
 
+    //打印response错误
+    public static boolean pResponse(String head, CThostFtdcRspInfoField rsp) {
+        if (rsp != null && rsp.getErrorID() != 0)
+        {
+            System.out.printf("%s: 错误[%s], 错误编号[%d]\n", head, rsp.getErrorMsg(), rsp.getErrorID());
+            return true;
+        }
+        return false;
+    }
+
     //打印认证信息
     public static void pRspAuth(String head, @NotNull CThostFtdcRspAuthenticateField pAuth) {
         System.out.println(head + " auth ---> :");
@@ -140,6 +150,7 @@ public class Output {
     //打印查询投资者持仓
     public static void pInvestorPosition(String head, @NotNull CThostFtdcInvestorPositionField info) {
         System.out.println(head + "投资者持仓 ---> :");
+        //TODO 持仓多空方向 持仓日期标志 持仓
         System.out.printf(
                 "合约:%s, 经纪公司:%s, 投资人:%s, 持仓多空方向:%c, 投机套保标志:%c, 持仓日期标志:%c, 上日持仓:%d\n",
                 info.getInstrumentID(), info.getBrokerID(), info.getInvestorID(), info.getPosiDirection(),
@@ -187,6 +198,7 @@ public class Output {
                 account.getFrozenMargin(), account.getFrozenCash(), account.getFrozenCommission(),
                 account.getFrozenPartition());
 
+        //TODO : 可用资金
         System.out.printf(
                 "当前保证金总额:%f, 资金差额:%f, 手续费:%f, 平仓盈亏:%f, 持仓盈亏:%f, 期货结算准备金:%f, 可用资金:%f, 可取资金:%f\n",
                 account.getCurrMargin(), account.getCashIn(), account.getCommission(), account.getCloseProfit(),
@@ -413,9 +425,9 @@ public class Output {
             System.out.printf("%s : OnRtnDepthMarketData empty\n", head);
         }else{
             System.out.println(head + " 深度行情---> :");
-            System.out.printf("时间:%s, 合约代码:%s, 最新价:%f, 买一价:%f -- :%d, 卖一价:%f -- :%d\n",
-                    pd.getUpdateTime(), pd.getInstrumentID(), pd.getLastPrice(), pd.getBidPrice1(), pd.getBidVolume1(),
-                    pd.getAskPrice1(), pd.getAskVolume1());
+            System.out.printf("时间:%s, 毫秒:%d, 合约代码:%s, 最新价:%f, 买一价:%f -- :%d, 卖一价:%f -- :%d\n",
+                    pd.getUpdateTime(), pd.getUpdateMillisec(), pd.getInstrumentID(), pd.getLastPrice(),
+                    pd.getBidPrice1(), pd.getBidVolume1(), pd.getAskPrice1(), pd.getAskVolume1());
 
             /*System.out.printf("交易日:%s, 业务日期:%s, 最后修改时间:%s, 最后修改毫秒:%d\n",
                     pd.getTradingDay(), pd.getActionDay(), pd.getUpdateTime(), pd.getUpdateMillisec());

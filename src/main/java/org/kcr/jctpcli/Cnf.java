@@ -15,7 +15,6 @@ public class Cnf {
     private String appID;
     private String authCode;
 
-    private String exchangeID;
     private CnfInstrument[] instruments;
 
     private String[] symbols;
@@ -23,7 +22,7 @@ public class Cnf {
 
     public Cnf(String tradeServer, String mdServer, String brokerID,
                String accountID, String password, String appID,
-               String authCode, String exchangeID, CnfInstrument[] instruments) {
+               String authCode, CnfInstrument[] instruments) {
         this.tradeServer = tradeServer;
         this.mdServer = mdServer;
         this.brokerID = brokerID;
@@ -31,7 +30,6 @@ public class Cnf {
         this.password = password;
         this.appID = appID;
         this.authCode = authCode;
-        this.exchangeID = exchangeID;
         this.instruments = instruments;
         this.instrHash = new HashMap<String, String>();
     }
@@ -63,7 +61,6 @@ public class Cnf {
                 ", password='" + password + '\'' +
                 ", appID='" + appID + '\'' +
                 ", authCode='" + authCode + '\'' +
-                ", exchangeID='" + exchangeID + '\'' +
                 ", instruments=" + Arrays.toString(instruments) +
                 '}';
     }
@@ -122,14 +119,6 @@ public class Cnf {
 
     public void setAuthCode(String authCode) {
         this.authCode = authCode;
-    }
-
-    public String getExchangeID() {
-        return exchangeID;
-    }
-
-    public void setExchangeID(String exchangeID) {
-        this.exchangeID = exchangeID;
     }
 
     public CnfInstrument[] getInstruments() {

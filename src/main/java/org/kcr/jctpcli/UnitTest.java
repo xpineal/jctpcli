@@ -1,5 +1,7 @@
 package org.kcr.jctpcli;
 
+import org.kcr.jctpcli.Output;
+import org.kcr.jctpcli.TraderReq;
 import org.kr.jctp.*;
 
 public class UnitTest {
