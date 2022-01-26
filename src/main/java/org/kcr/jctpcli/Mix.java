@@ -11,9 +11,6 @@ public class Mix {
         var cnf = FJson.readCnf("./cnf.json");
         boolean debugMode = false;
 
-        //md spi
-        MixMdSpi mdSpi;
-
         cnf.refresh();
         if (args.length > 0) {
             if (args[0].equals("debug")) {

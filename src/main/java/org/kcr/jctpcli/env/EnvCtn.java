@@ -111,7 +111,6 @@ public class EnvCtn {
     public Instr feedMarket(@NotNull CThostFtdcDepthMarketDataField pInfo) {
         var instrID = pInfo.getInstrumentID();
         Instr instr;
-        boolean posComp;
         lock.lock();
         try {
             //TODO: 后续用Map
@@ -120,11 +119,10 @@ public class EnvCtn {
             //instr = ch.clone();
             instrObj.feedMarket(pInfo);
             instr = instrObj.clone();
-            posComp = bPosCompleted;
         }finally {
             lock.unlock();
         }
-        tradeGo(instr, posComp);
+        tradeGo(instr);
         return instr;
     }
 
@@ -175,17 +173,17 @@ public class EnvCtn {
                     //多单数量加
                     instrObj.CLong += vol;
                 }else{
-                    //多单数量减
-                    instrObj.CLong -= vol;
+                    //空单数量减
+                    instrObj.CShort -= vol;
                 }
             }else {
                 //卖方向 -- 做空
                 if (offset == jctpConstants.THOST_FTDC_OF_Open) {
-                    //多单数量加
+                    //空单数量加
                     instrObj.CShort += vol;
                 }else{
                     //多单数量减
-                    instrObj.CShort -= vol;
+                    instrObj.CLong -= vol;
                 }
             }
         }finally {
@@ -210,21 +208,24 @@ public class EnvCtn {
         return outInstr;
     }
 
+    //TODO: for test
+    private static int buyCount = 0;
     //真正的交易逻辑
-    private void tradeGo(Instr instr, boolean bPosCompleted) {
-        if (!bPosCompleted) {
-            //还没有拿到行情数据，先退出
-            return;
-        }
-
+    private void tradeGo(Instr instr) {
         //TODO: 真正的逻辑
-        if (instr.askPrice - instr.buyPrice < 2) {
+        if (instr.sellPrice - instr.buyPrice < 5) {
             //卖1价与买1价差不大 -- 实际上需要看比例
             //先平仓
             closeHold(instr);
-            //买2手 -- TODO 只是测试逻辑
-            //openBuy(instr.askPrice, 1); //用卖1价买
-            //openSell(instr.buyPrice, 1); //用买1价卖
+            //只做5次操作
+            if (buyCount < 1) {
+                //买2手 -- TODO 只是测试逻辑
+                var vol = 5;
+                openBuy(instr.sellPrice, vol); //用卖1价买
+                //System.out.printf("卖空:%d\n", vol);
+                //openSell(instr.buyPrice, vol); //用买1价卖
+                buyCount++;
+            }
         }
     }
 
@@ -236,19 +237,19 @@ public class EnvCtn {
         }
         if (instr.CShortYsd > 0) {
             //平掉昨日空头持仓
-            closeSell(instr.askPrice, instr.CLongYsd, closeYsdFlag(instr.exchangeID));
+            closeSell(instr.sellPrice, instr.CShortYsd, closeYsdFlag(instr.exchangeID));
         }
         if (instr.CLong > 0) {
             //平掉多头持仓
-            closeBuy(instr.buyPrice, instr.CLongYsd, closeYsdFlag(instr.exchangeID));
+            closeBuy(instr.buyPrice, instr.CLong, closeTodayFlag(instr.exchangeID));
         }
         if (instr.CShort > 0) {
             //平掉空头持仓
-            closeSell(instr.askPrice, instr.CLongYsd, closeYsdFlag(instr.exchangeID));
+            closeSell(instr.sellPrice, instr.CShort, closeTodayFlag(instr.exchangeID));
         }
     }
 
-    //开买单
+    //开多仓
     private void openBuy(double price, int vol) {
         String exchangeID;
         String instrID;
@@ -268,7 +269,7 @@ public class EnvCtn {
         traderCall.addLimitPriceOpenBuyOrder(exchangeID, instrID, price, vol);
     }
 
-    //开卖单
+    //开空仓
     private void openSell(double price, int vol) {
         String exchangeID;
         String instrID;
@@ -288,7 +289,7 @@ public class EnvCtn {
         traderCall.addLimitPriceOpenSellOrder(exchangeID, instrID, price, vol);
     }
 
-    //平买单
+    //平多仓
     //closeFlag -- 上期所和能源所有用平今仓/平昨仓，这里需要传入标记
     private void closeBuy(double price, int vol, String closeFlag) {
         String exchangeID;
@@ -304,7 +305,7 @@ public class EnvCtn {
         traderCall.addLimitPriceCloseBuyOrder(exchangeID, instrID, price, vol, closeFlag);
     }
 
-    //平卖单
+    //平空仓
     //closeFlag -- 上期所和能源所有用平今仓/平昨仓，这里需要传入标记
     private void closeSell(double price, int vol, String closeFlag) {
         String exchangeID;

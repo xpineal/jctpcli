@@ -5,8 +5,6 @@ import org.kr.jctp.CThostFtdcDepthMarketDataField;
 import org.kr.jctp.CThostFtdcInvestorPositionField;
 import org.kr.jctp.jctpConstants;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 //合约信息
 public class Instr {
     public Instr(String id, String exchangeID) {
@@ -23,17 +21,17 @@ public class Instr {
     //买1
     public double buyPrice;
     //卖1
-    public double askPrice;
+    public double sellPrice;
     //最新价
     public double price;
 
-    //买多单的量
+    //开多单的量
     public int CLong;
-    //买空单的量
+    //开空单的量
     public int CShort;
-    //昨日买多单的量
+    //往日开多单的量
     public int CLongYsd;
-    //昨日买空单的量
+    //往日开空单的量
     public int CShortYsd;
 
 
@@ -44,7 +42,7 @@ public class Instr {
         var vol = pInfo.getPosition();
         if (posDir == jctpConstants.THOST_FTDC_PD_Long) {
             if (pDate == jctpConstants.THOST_FTDC_PSD_Today) {
-                this.CLongYsd += vol;
+                this.CLong += vol;
             }else{
                 this.CLongYsd += vol;
             }
@@ -53,7 +51,7 @@ public class Instr {
             if (pDate == jctpConstants.THOST_FTDC_PSD_Today) {
                 this.CShort += vol;
             }else{
-                this.CShortYsd = vol;
+                this.CShortYsd += vol;
             }
         }
     }
@@ -61,7 +59,7 @@ public class Instr {
     //填充行情
     public void feedMarket(@NotNull CThostFtdcDepthMarketDataField pInfo) {
         buyPrice = pInfo.getBidPrice1();
-        askPrice = pInfo.getAskPrice1();
+        sellPrice = pInfo.getAskPrice1();
         price = pInfo.getLastPrice();
     }
 
@@ -69,7 +67,7 @@ public class Instr {
     public Instr clone() {
         var c = new Instr(id, exchangeID);
         c.buyPrice = buyPrice;
-        c.askPrice = askPrice;
+        c.sellPrice = sellPrice;
         c.price = price;
 
         c.CLongYsd = CLongYsd;

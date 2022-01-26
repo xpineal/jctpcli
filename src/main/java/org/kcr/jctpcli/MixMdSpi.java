@@ -55,7 +55,12 @@ public class MixMdSpi extends CThostFtdcMdSpi{
         if (debugMode) {
             Output.pDepthMarketData("行情", pDepthMarketData);
         }
-        env.feedMarket(pDepthMarketData);
+        var instr = env.feedMarket(pDepthMarketData);
+        if (debugMode) {
+            System.out.println("");
+            System.out.printf("多:%d, 空:%d, 昨多:%d, 昨空:%d\n",
+                    instr.CLong, instr.CShort, instr.CLongYsd, instr.CShortYsd);
+        }
     }
 
     private CThostFtdcMdApi mdApi;
