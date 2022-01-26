@@ -1,4 +1,4 @@
-package org.kcr.jctpcli;
+package org.kcr.jctpcli.cnf;
 
 import com.alibaba.fastjson.JSON;
 

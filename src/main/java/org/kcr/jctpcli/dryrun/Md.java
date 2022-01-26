@@ -1,5 +1,8 @@
-package org.kcr.jctpcli;
+package org.kcr.jctpcli.dryrun;
 
+import org.kcr.jctpcli.cnf.Cnf;
+import org.kcr.jctpcli.cnf.FJson;
+import org.kcr.jctpcli.util.Output;
 import org.kr.jctp.*;
 
 class MdSpi extends CThostFtdcMdSpi{

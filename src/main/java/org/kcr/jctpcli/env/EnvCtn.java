@@ -7,11 +7,18 @@ import org.kr.jctp.*;
 import java.util.concurrent.locks.*;
 
 public class EnvCtn {
+    public static final String SHFE = "SHFE";
+    public static final String INE = "INE";
+
+    private static final String Close = Character.toString(jctpConstants.THOST_FTDC_OF_Close);
+    private static final String CloseToday = Character.toString(jctpConstants.THOST_FTDC_OF_CloseToday);
+    private static final String CloseYesterday = Character.toString(jctpConstants.THOST_FTDC_OF_CloseYesterday);
+
     //锁
     private final Lock lock = new ReentrantLock();
 
     //交易实例
-    private TraderCall traderCall;
+    private final TraderCall traderCall;
     //合约的Map
     //暂时只考虑一个合约
     //private Map<String, Instr> holdMap = new HashMap<>();
@@ -109,7 +116,6 @@ public class EnvCtn {
 
     //填充行情信息
     public Instr feedMarket(@NotNull CThostFtdcDepthMarketDataField pInfo) {
-        var instrID = pInfo.getInstrumentID();
         Instr instr;
         lock.lock();
         try {
@@ -175,17 +181,7 @@ public class EnvCtn {
                 }else{
                     //空单数量减
                     //平仓时如果有昨日的持仓，优先扣除昨日持仓
-                    if (instrObj.CShortYsd > 0) {
-                        var delta = vol - instrObj.CShortYsd;
-                        if (delta > 0) {
-                            instrObj.CShortYsd = 0;
-                            instrObj.CShort -= delta;
-                        }else{
-                            instrObj.CShortYsd -= vol;
-                        }
-                    }else{
-                        instrObj.CShort -= vol;
-                    }
+                    instrObj.decOpenSellNum(vol);
                 }
             }else {
                 //卖方向 -- 做空
@@ -195,17 +191,7 @@ public class EnvCtn {
                 }else{
                     //多单数量减
                     //平仓时如果有昨日的持仓，优先扣除昨日持仓
-                    if (instrObj.CLongYsd > 0) {
-                        var delta = vol - instrObj.CLongYsd;
-                        if (delta > 0) {
-                            instrObj.CLongYsd = 0;
-                            instrObj.CLong -= delta;
-                        }else{
-                            instrObj.CLongYsd -= vol;
-                        }
-                    }else{
-                        instrObj.CLong -= vol;
-                    }
+                    instrObj.decOpenBuyNum(vol);
                 }
             }
         }finally {
@@ -213,24 +199,7 @@ public class EnvCtn {
         }
     }
 
-    //获取合约基本信息
-    public Instr getInstr(String instrID) {
-        Instr outInstr = null;
-        lock.lock();
-        try {
-            //TODO: 后续用Map
-            //var ch = holdMap.get(instrID);
-            //if (ch != null) {
-            //    outInstr = ch.clone();
-            //}
-            outInstr = instrObj.clone();
-        }finally {
-            lock.unlock();
-        }
-        return outInstr;
-    }
-
-    //TODO: for test
+    //TODO: buyCount -- only for test
     private static int buyCount = 0;
     //真正的交易逻辑
     private void tradeGo(Instr instr) {
@@ -251,7 +220,7 @@ public class EnvCtn {
     }
 
     //平已有持仓
-    private void closeHold(Instr instr) {
+    private void closeHold(@NotNull Instr instr) {
         if (instr.CLongYsd > 0) {
             //平掉昨日多头持仓
             closeBuy(instr.buyPrice, instr.CLongYsd, closeYsdFlag(instr.exchangeID));
@@ -353,7 +322,7 @@ public class EnvCtn {
     }
 
     //根据交易所确定平昨仓标记
-    private String closeYsdFlag(String exchangeID) {
+    private String closeYsdFlag(@NotNull String exchangeID) {
         switch (exchangeID) {
             case SHFE:
             case INE:
@@ -362,10 +331,4 @@ public class EnvCtn {
         return Close;
     }
 
-    public static final String SHFE = "SHFE";
-    public static final String INE = "INE";
-
-    private static final String Close = Character.toString(jctpConstants.THOST_FTDC_OF_Close);
-    private static final String CloseToday = Character.toString(jctpConstants.THOST_FTDC_OF_CloseToday);
-    private static final String CloseYesterday = Character.toString(jctpConstants.THOST_FTDC_OF_CloseYesterday);
 }

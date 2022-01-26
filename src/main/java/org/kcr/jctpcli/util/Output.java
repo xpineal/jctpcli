@@ -1,6 +1,7 @@
-package org.kcr.jctpcli;
+package org.kcr.jctpcli.util;
 
 import org.jetbrains.annotations.NotNull;
+import org.kcr.jctpcli.TraderReq;
 import org.kr.jctp.*;
 
 public class Output {
@@ -56,7 +57,7 @@ public class Output {
         System.out.printf("投资单元代码:%s, 账号:%s, 币种:%s, clientID:%s, ipAddress:%s, macAddress:%s\n",
                 pInputOrder.getInvestUnitID(), pInputOrder.getAccountID(), pInputOrder.getCurrencyID(),
                 pInputOrder.getClientID(), pInputOrder.getIPAddress(), pInputOrder.getMacAddress());
-        System.out.println("");
+        System.out.println();
     }
 
     //打印查询的订单信息
@@ -115,7 +116,7 @@ public class Output {
         System.out.printf(
                 "账号:%s, 币种:%s, ipAddress:%s, macAddress:%s\n",
                 pOrder.getAccountID(), pOrder.getCurrencyID(), pOrder.getIPAddress(), pOrder.getMacAddress());
-        System.out.println("");
+        System.out.println();
     }
 
     //打印查询的交易信息
@@ -144,7 +145,7 @@ public class Output {
         System.out.printf(
                 "交易日:%s, 结算编号:%d, 经纪公司报单编号:%d, 成交来源:%c\n",
                 pTrade.getTradingDay(), pTrade.getSettlementID(), pTrade.getBrokerOrderSeq(), pTrade.getTradeSource());
-        System.out.println("");
+        System.out.println();
     }
 
     //打印查询投资者持仓
@@ -181,7 +182,7 @@ public class Output {
         System.out.printf(
                 "执行冻结:%d, 执行冻结金额:%f, 放弃执行冻结:%d\n",
                 info.getStrikeFrozen(), info.getStrikeFrozenAmount(), info.getAbandonFrozen());
-        System.out.println("");
+        System.out.println();
     }
 
     //打印查询的账户信息
@@ -222,7 +223,7 @@ public class Output {
                 account.getSpecProductFrozenCommission(), account.getSpecProductPositionProfit(),
                 account.getSpecProductCloseProfit(), account.getSpecProductPositionProfitByAlg(),
                 account.getSpecProductExchangeMargin());
-        System.out.println("");
+        System.out.println();
     }
 
     //打印查询的投资者信息
@@ -237,7 +238,7 @@ public class Output {
                 "电话:%s, Address:%s, 开户日期:%s, 手机:%s, 手续费率模板代码:%s, 保证金率模板代码:%s\n",
                 account.getTelephone(), account.getAddress(), account.getOpenDate(), account.getMobile(),
                 account.getCommModelID(), account.getMarginModelID());
-        System.out.println("");
+        System.out.println();
     }
 
     //打印查询的交易编码
@@ -247,7 +248,7 @@ public class Output {
                 "经纪公司:%s, 投资人:%s, 交易所:%s, clientID:%s, 是否活跃:%d, clientIDType:%c\n",
                 tc.getBrokerID(), tc.getInvestorID(), tc.getExchangeID(), tc.getClientID(), tc.getIsActive(),
                 tc.getClientIDType());
-        System.out.println("");
+        System.out.println();
     }
 
     //打印查询的合约保证金率
@@ -260,7 +261,7 @@ public class Output {
                 "投机套保标志:%c, 多头保证金率:%f, 多头保证金费:%f, 空头保证金率:%f, 空头保证金费:%f, 是否相对交易所收取:%d\n",
                 tc.getHedgeFlag(), tc.getLongMarginRatioByMoney(), tc.getLongMarginRatioByVolume(),
                 tc.getShortMarginRatioByMoney(), tc.getShortMarginRatioByVolume(), tc.getIsRelative());
-        System.out.println("");
+        System.out.println();
     }
 
     //打印查询的合约手续费率
@@ -273,7 +274,7 @@ public class Output {
                 "开仓手续费率:%f, 开仓手续费:%f, 平仓手续费率:%f, 平仓手续费:%f, 平今手续费率:%f, 平今手续费:%f\n",
                 tc.getOpenRatioByMoney(), tc.getOpenRatioByVolume(), tc.getCloseRatioByMoney(),
                 tc.getCloseRatioByVolume(), tc.getCloseTodayRatioByMoney(), tc.getCloseTodayRatioByVolume());
-        System.out.println("");
+        System.out.println();
     }
 
     //打印查询的报单手续费
@@ -285,7 +286,7 @@ public class Output {
         System.out.printf(
                 "投机套保标志:%c, 报单手续费:%f, 撤单手续费:%f\n",
                 tc.getHedgeFlag(), tc.getOrderCommByVolume(), tc.getOrderActionCommByVolume());
-        System.out.println("");
+        System.out.println();
     }
 
     //打印查询的交易所
@@ -294,7 +295,7 @@ public class Output {
         System.out.printf(
                 "交易所:%s, 交易所名称:%s, 交易所属性:%s\n",
                 tc.getExchangeID(), tc.getExchangeName(), tc.getExchangeProperty());
-        System.out.println("");
+        System.out.println();
     }
 
     //打印查询的合约
@@ -324,7 +325,7 @@ public class Output {
                 "基础商品代码:%s, 执行价:%f, 期权类型:%c, 合约基础商品乘数:%f, 组合类型:%c\n",
                 tc.getUnderlyingInstrID(), tc.getStrikePrice(), tc.getOptionsType(), tc.getUnderlyingMultiple(),
                 tc.getCombinationType());
-        System.out.println("");
+        System.out.println();
     }
 
     //打印查询的合约状态
@@ -337,7 +338,7 @@ public class Output {
         System.out.printf(
                 "合约交易状态:%c, 交易阶段编号:%d, 进入时间:%s, 进入本状态原因:%c\n",
                 tc.getInstrumentStatus(), tc.getTradingSegmentSN(), tc.getEnterTime(), tc.getEnterReason());
-        System.out.println("");
+        System.out.println();
     }
 
     //打印查询投资者持仓明细
@@ -363,7 +364,7 @@ public class Output {
                 info.getMargin(), info.getExchMargin(), info.getMarginRateByMoney(),
                 info.getMarginRateByVolume(), info.getLastSettlementPrice(), info.getSettlementPrice(),
                 info.getCloseVolume(), info.getCloseAmount());
-        System.out.println("");
+        System.out.println();
     }
 
     //打印查询的交易所保证金率
@@ -376,7 +377,7 @@ public class Output {
                 "投机套保标志:%c, 多头保证金率:%f, 多头保证金费:%f, 空头保证金率:%f, 空头保证金费:%f\n",
                 tc.getHedgeFlag(), tc.getLongMarginRatioByMoney(), tc.getLongMarginRatioByVolume(),
                 tc.getShortMarginRatioByMoney(), tc.getShortMarginRatioByVolume());
-        System.out.println("");
+        System.out.println();
     }
 
     //打印查询的调整保证金率
@@ -399,7 +400,7 @@ public class Output {
                 "不跟随交易所投资者 多头保证金率:%f, 多头保证金费:%f, 空头保证金率:%f, 空头保证金费:%f\n",
                 tc.getNoLongMarginRatioByMoney(), tc.getNoLongMarginRatioByVolume(),
                 tc.getNoShortMarginRatioByMoney(), tc.getNoShortMarginRatioByVolume());
-        System.out.println("");
+        System.out.println();
     }
 
     //打印登录信息
@@ -410,13 +411,13 @@ public class Output {
                 info.getFrontID(), info.getSessionID(), info.getTradingDay(), info.getBrokerID(), info.getUserID(),
                 info.getSystemName(), info.getMaxOrderRef(), info.getLoginTime(), info.getSHFETime(),
                 info.getDCETime(), info.getCZCETime(), info.getFFEXTime(), info.getINETime());
-        System.out.println("");
+        System.out.println();
     }
 
     //打印合约ID
     public static void pSpecificInstrument(String head, @NotNull CThostFtdcSpecificInstrumentField instrument) {
         System.out.printf("%s instrumentID: %s\n", head, instrument.getInstrumentID());
-        System.out.println("");
+        System.out.println();
     }
 
     //打印深度行情
@@ -428,33 +429,7 @@ public class Output {
             System.out.printf("时间:%s, 毫秒:%d, 合约代码:%s, 最新价:%f, 买一价:%f -- :%d, 卖一价:%f -- :%d\n",
                     pd.getUpdateTime(), pd.getUpdateMillisec(), pd.getInstrumentID(), pd.getLastPrice(),
                     pd.getBidPrice1(), pd.getBidVolume1(), pd.getAskPrice1(), pd.getAskVolume1());
-
-            /*System.out.printf("交易日:%s, 业务日期:%s, 最后修改时间:%s, 最后修改毫秒:%d\n",
-                    pd.getTradingDay(), pd.getActionDay(), pd.getUpdateTime(), pd.getUpdateMillisec());
-            System.out.printf("合约代码:%s, 交易所代码:%s, 合约在交易所的代码:%s, 最新价:%f, 上次结算价:%f\n",
-                    pd.getInstrumentID(), pd.getExchangeID(), pd.getExchangeInstID(),
-                    pd.getLastPrice(), pd.getPreSettlementPrice());
-            System.out.printf(
-                    "昨收盘:%f, 昨持仓量:%f, 今开盘:%f, 最高价:%f, 最低价:%f, 数量:%d, 当日均价:%f, 成交金额:%f, 持仓量:%f\n",
-                    pd.getPreClosePrice(), pd.getPreOpenInterest(), pd.getOpenPrice(), pd.getHighestPrice(),
-                    pd.getLowestPrice(), pd.getVolume(), pd.getAveragePrice(), pd.getTurnover(), pd.getOpenInterest());
-
-            System.out.printf(
-                    "今收盘:%f, 本次结算价:%f, 涨停板价:%f, 跌停板价:%f, 昨虚实度:%f, 今虚实度:%f, 上带价:%f, 下带价:%f\n",
-                    pd.getClosePrice(), pd.getSettlementPrice(), pd.getUpperLimitPrice(), pd.getLowerLimitPrice(),
-                    pd.getPreDelta(), pd.getCurrDelta(), pd.getBandingUpperPrice(), pd.getBandingUpperPrice());
-
-            System.out.printf("买一价:%f -- :%d, 买二价:%f -- :%d, 买三价:%f -- :%d, 买四价:%f -- :%d, 买五价:%f -- :%d\n",
-                    pd.getBidPrice1(), pd.getBidVolume1(), pd.getBidPrice2(), pd.getBidVolume2(),
-                    pd.getBidPrice3(), pd.getBidVolume3(), pd.getBidPrice4(), pd.getBidVolume4(),
-                    pd.getBidPrice5(), pd.getBidVolume5());
-
-            System.out.printf("卖一价:%f -- :%d, 卖二价:%f -- :%d, 卖三价:%f -- :%d, 卖四价:%f -- :%d, 卖五价:%f -- :%d\n",
-                    pd.getAskPrice1(), pd.getAskVolume1(), pd.getAskPrice2(), pd.getAskVolume2(),
-                    pd.getAskPrice3(), pd.getAskVolume3(), pd.getAskPrice4(), pd.getAskVolume4(),
-                    pd.getAskPrice5(), pd.getAskVolume5());*/
-
-            System.out.println("");
+            System.out.println();
         }
     }
 
@@ -473,7 +448,7 @@ public class Output {
 
         System.out.printf("投资单元代码:%s, ipAddress:%s, macAddress:%s\n",
                 act.getInvestUnitID(), act.getIPAddress(), act.getMacAddress());
-        System.out.println("");
+        System.out.println();
     }
 
     //打印撤单信息
@@ -492,7 +467,7 @@ public class Output {
         System.out.printf("交易员代码:%s, 安装编号:%d, 用户:%s, 合约:%s, 投资单元代码:%s, ipAddress:%s, macAddress:%s\n",
                 act.getTraderID(), act.getInstallID(), act.getUserID(), act.getInstrumentID(), act.getInvestUnitID(),
                 act.getIPAddress(), act.getMacAddress());
-        System.out.println("");
+        System.out.println();
     }
 
     //打印组合单腿汇总
@@ -506,6 +481,6 @@ public class Output {
         System.out.printf(
                 "组合优先级:%s, 组合合约代码:%s, 组合投机套保标志:%c, 组合类型:%c\n",
                 act.getTradeGroupID(), act.getCombInstrumentID(), act.getCombHedgeFlag(), act.getCombinationType());
-        System.out.println("");
+        System.out.println();
     }
 }

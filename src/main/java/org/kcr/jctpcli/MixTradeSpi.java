@@ -2,14 +2,19 @@ package org.kcr.jctpcli;
 
 import org.jetbrains.annotations.NotNull;
 import org.kcr.jctpcli.env.EnvCtn;
+import org.kcr.jctpcli.util.Output;
 import org.kr.jctp.*;
 
 public class MixTradeSpi extends CThostFtdcTraderSpi {
+    private final TraderCall traderCall;
+    //行情交易对象
+    private final EnvCtn env;
+    //debug mode
+    private final boolean debugMode;
 
-    public MixTradeSpi(TraderCall traderCall, EnvCtn env, String instrumentID, boolean debugMode) {
+    public MixTradeSpi(TraderCall traderCall, EnvCtn env, boolean debugMode) {
         this.traderCall = traderCall;
         this.env = env;
-        this.instrumentID = instrumentID;
         this.debugMode = debugMode;
     }
 
@@ -22,7 +27,7 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
     @Override
     public void OnFrontDisconnected(int nReason) {
         System.out.printf("交易服务器连接断开,原因: %d\n", nReason);
-    };
+    }
 
     @Override
     public void OnHeartBeatWarning(int nTimeLapse) {
@@ -63,12 +68,6 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
             Output.pLoginInfo("交易登录", pRspUserLogin);
         }
         env.feedLogin();
-
-//        var rt = traderCall.queryTradeAccount("");
-//
-//        if (debugMode) {
-//            System.out.printf("查询账户请求:%d-%d\n", rt.requestID, rt.resultCode);
-//        }
     }
 
     @Override
@@ -94,10 +93,6 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
         if (Output.pResponse("交易服务查询账号", pRspInfo)) {
             return;
         }
-//        var rp = traderCall.queryInvestorPosition(instrumentID);
-//        if (debugMode) {
-//            System.out.printf("查询持仓请求:%d-%d\n", rp.requestID, rp.resultCode);
-//        }
         if (pTradingAccount == null) {
             System.out.println("交易服务查询交易账号返回为空");
             return;
@@ -157,11 +152,4 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
         traderCall.setAtom(frontID, sessionID, rf);
     }
 
-    private TraderCall traderCall;
-    //行情交易对象
-    private EnvCtn env;
-    //debug mode
-    boolean debugMode;
-    //instrument id
-    String instrumentID;
 }

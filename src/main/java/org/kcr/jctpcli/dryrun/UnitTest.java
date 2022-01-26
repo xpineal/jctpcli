@@ -1,6 +1,6 @@
-package org.kcr.jctpcli;
+package org.kcr.jctpcli.dryrun;
 
-import org.kcr.jctpcli.Output;
+import org.kcr.jctpcli.util.Output;
 import org.kcr.jctpcli.TraderReq;
 import org.kr.jctp.*;
 

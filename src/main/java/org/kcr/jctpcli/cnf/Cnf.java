@@ -1,4 +1,4 @@
-package org.kcr.jctpcli;
+package org.kcr.jctpcli.cnf;
 
 import java.util.Arrays;
 import java.util.HashMap;

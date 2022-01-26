@@ -1,4 +1,4 @@
-package org.kcr.jctpcli;
+package org.kcr.jctpcli.cnf;
 
 public class CnfInstrument {
     private String instrumentID;

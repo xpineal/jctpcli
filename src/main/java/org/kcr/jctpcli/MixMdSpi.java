@@ -1,9 +1,19 @@
 package org.kcr.jctpcli;
 
 import org.kcr.jctpcli.env.EnvCtn;
+import org.kcr.jctpcli.util.Output;
 import org.kr.jctp.*;
 
 public class MixMdSpi extends CThostFtdcMdSpi{
+    private final CThostFtdcMdApi mdApi;
+    private final CThostFtdcReqUserLoginField loginField;
+    private final String[] instruments;
+
+    //行情交易对象
+    private final EnvCtn env;
+    //debug mode
+    boolean debugMode;
+
     MixMdSpi(EnvCtn env, CThostFtdcMdApi mdApi, String brokerID,
              String userID, String passwd, String[] instruments, boolean debugMode) {
         this.env = env;
@@ -25,7 +35,7 @@ public class MixMdSpi extends CThostFtdcMdSpi{
     @Override
     public void OnFrontDisconnected(int nReason) {
         System.out.printf("行情服务器连接断开,原因: %d\n", nReason);
-    };
+    }
 
     @Override
     public void OnHeartBeatWarning(int nTimeLapse) {
@@ -57,18 +67,10 @@ public class MixMdSpi extends CThostFtdcMdSpi{
         }
         var instr = env.feedMarket(pDepthMarketData);
         if (debugMode) {
-            System.out.println("");
+            System.out.println();
             System.out.printf("多:%d, 空:%d, 昨多:%d, 昨空:%d\n",
                     instr.CLong, instr.CShort, instr.CLongYsd, instr.CShortYsd);
         }
     }
 
-    private CThostFtdcMdApi mdApi;
-    private CThostFtdcReqUserLoginField loginField;
-    private String[] instruments;
-
-    //行情交易对象
-    private EnvCtn env;
-    //debug mode
-    boolean debugMode;
 }

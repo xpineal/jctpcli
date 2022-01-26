@@ -1,9 +1,9 @@
-package org.kcr.jctpcli;
+package org.kcr.jctpcli.util;
 
 import java.util.Scanner;
 
 public class Input {
-    private static Scanner scanner = new Scanner(System.in);
+    private static final Scanner scanner = new Scanner(System.in);
 
     public static int inputMenu() {
         System.out.println("输入: 1-查询持仓 2-查询持仓详情 3-查询账户 4-查询投资者 5-查询组合");

@@ -1,5 +1,6 @@
 package org.kcr.jctpcli;
 
+import org.kcr.jctpcli.cnf.FJson;
 import org.kcr.jctpcli.env.EnvCtn;
 import org.kcr.jctpcli.env.Instr;
 import org.kr.jctp.CThostFtdcMdApi;
@@ -30,7 +31,7 @@ public class Mix {
                 cnf.getBrokerID(), cnf.getAccountID(), cnf.getPassword(), cnf.getAppID(), cnf.getAuthCode());
         //交易环境
         var envCtn = new EnvCtn(traderCall, instr);
-        var tradeSpi = new MixTradeSpi(traderCall, envCtn, instr.id, debugMode);
+        var tradeSpi = new MixTradeSpi(traderCall, envCtn, debugMode);
         traderApi.RegisterSpi(tradeSpi);
         traderApi.SubscribePrivateTopic(THOST_TE_RESUME_TYPE.THOST_TERT_QUICK);
         traderApi.SubscribePublicTopic(THOST_TE_RESUME_TYPE.THOST_TERT_QUICK);
