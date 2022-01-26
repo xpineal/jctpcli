@@ -29,6 +29,10 @@ shadowJar {
     configurations = [project.configurations.compileClasspath]
 }
 
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+
 test {
     useJUnitPlatform()
 }

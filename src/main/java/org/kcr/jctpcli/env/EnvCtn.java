@@ -174,7 +174,18 @@ public class EnvCtn {
                     instrObj.CLong += vol;
                 }else{
                     //空单数量减
-                    instrObj.CShort -= vol;
+                    //平仓时如果有昨日的持仓，优先扣除昨日持仓
+                    if (instrObj.CShortYsd > 0) {
+                        var delta = vol - instrObj.CShortYsd;
+                        if (delta > 0) {
+                            instrObj.CShortYsd = 0;
+                            instrObj.CShort -= delta;
+                        }else{
+                            instrObj.CShortYsd -= vol;
+                        }
+                    }else{
+                        instrObj.CShort -= vol;
+                    }
                 }
             }else {
                 //卖方向 -- 做空
@@ -183,7 +194,18 @@ public class EnvCtn {
                     instrObj.CShort += vol;
                 }else{
                     //多单数量减
-                    instrObj.CLong -= vol;
+                    //平仓时如果有昨日的持仓，优先扣除昨日持仓
+                    if (instrObj.CLongYsd > 0) {
+                        var delta = vol - instrObj.CLongYsd;
+                        if (delta > 0) {
+                            instrObj.CLongYsd = 0;
+                            instrObj.CLong -= delta;
+                        }else{
+                            instrObj.CLongYsd -= vol;
+                        }
+                    }else{
+                        instrObj.CLong -= vol;
+                    }
                 }
             }
         }finally {
@@ -218,12 +240,11 @@ public class EnvCtn {
             //先平仓
             closeHold(instr);
             //只做5次操作
-            if (buyCount < 1) {
-                //买2手 -- TODO 只是测试逻辑
-                var vol = 5;
+            if (buyCount < 5) {
+                //买1手 -- TODO 只是测试逻辑
+                var vol = 1;
                 openBuy(instr.sellPrice, vol); //用卖1价买
-                //System.out.printf("卖空:%d\n", vol);
-                //openSell(instr.buyPrice, vol); //用买1价卖
+                openSell(instr.buyPrice, vol); //用买1价卖
                 buyCount++;
             }
         }
