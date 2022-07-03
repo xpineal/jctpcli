@@ -230,18 +230,19 @@ public class Trader extends CThostFtdcTraderSpi{
         Output.pInstrument("Trade", pInstrument);
     }
 
-    @Override
-    public void OnRspQryInvestorPositionForComb(CThostFtdcInvestorPositionForCombField pCombAction,
-                                                CThostFtdcRspInfoField pRspInfo, int nRequestID, boolean bIsLast) {
-        if (Output.pResponse("Trade OnRspQryInvestorPositionForComb", pRspInfo, nRequestID, bIsLast)) {
-            return;
-        }
-        if (pCombAction == null) {
-            System.out.println("Trade OnRspQryInvestorPositionForComb empty");
-            return;
-        }
-        Output.pInvestorPositionForComb("Trade", pCombAction);
-    }
+//    新版本不再支持
+//    @Override
+//    public void OnRspQryInvestorPositionForComb(CThostFtdcInvestorPositionForCombField pCombAction,
+//                                                CThostFtdcRspInfoField pRspInfo, int nRequestID, boolean bIsLast) {
+//        if (Output.pResponse("Trade OnRspQryInvestorPositionForComb", pRspInfo, nRequestID, bIsLast)) {
+//            return;
+//        }
+//        if (pCombAction == null) {
+//            System.out.println("Trade OnRspQryInvestorPositionForComb empty");
+//            return;
+//        }
+//        Output.pInvestorPositionForComb("Trade", pCombAction);
+//    }
 
     @Override
     public void OnRspQryDepthMarketData(CThostFtdcDepthMarketDataField pDepthMarketData,
@@ -256,18 +257,19 @@ public class Trader extends CThostFtdcTraderSpi{
         Output.pDepthMarketData("Trade", pDepthMarketData);
     }
 
-    @Override
-    public void OnRspQryInstrumentStatus(CThostFtdcInstrumentStatusField pInstrumentStatus,
-                                         CThostFtdcRspInfoField pRspInfo, int nRequestID, boolean bIsLast) {
-        if (Output.pResponse("Trade OnRspQryInstrumentStatus", pRspInfo, nRequestID, bIsLast)) {
-            return;
-        }
-        if (pInstrumentStatus == null) {
-            System.out.println("Trade OnRspQryInstrumentStatus empty");
-            return;
-        }
-        Output.pInstrumentStatus("Trade", pInstrumentStatus);
-    }
+//    新版本不再支持
+//    @Override
+//    public void OnRspQryInstrumentStatus(CThostFtdcInstrumentStatusField pInstrumentStatus,
+//                                         CThostFtdcRspInfoField pRspInfo, int nRequestID, boolean bIsLast) {
+//        if (Output.pResponse("Trade OnRspQryInstrumentStatus", pRspInfo, nRequestID, bIsLast)) {
+//            return;
+//        }
+//        if (pInstrumentStatus == null) {
+//            System.out.println("Trade OnRspQryInstrumentStatus empty");
+//            return;
+//        }
+//        Output.pInstrumentStatus("Trade", pInstrumentStatus);
+//    }
 
     @Override
     public void OnRspQryInvestorPositionDetail(CThostFtdcInvestorPositionDetailField pInvestorPositionDetail,
@@ -480,7 +482,8 @@ public class Trader extends CThostFtdcTraderSpi{
                     traderCall.queryInvestor().outConsole("queryInvestor");
                     break;
                 case 5:
-                    traderCall.queryInvestorPositionForComb().outConsole("queryInvestorPositionForComb");
+                    //traderCall.queryInvestorPositionForComb().outConsole("queryInvestorPositionForComb");
+                    System.out.println("不再支持单腿查询");
                     break;
                 case 6:
                     price = Input.inputPrice();

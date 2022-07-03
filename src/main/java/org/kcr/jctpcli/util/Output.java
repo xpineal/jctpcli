@@ -193,11 +193,11 @@ public class Output {
                 account.getTradingDay(), account.getBrokerID(), account.getAccountID(), account.getPreMortgage(),
                 account.getPreCredit(), account.getPreDeposit(), account.getPreBalance(), account.getPreMargin());
 
+        //分仓冻结资金 新版本不再支持
         System.out.printf(
-                "利息基数:%f, 利息收入:%f, 入金金额:%f, 出金金额:%f, 冻结的保证金:%f, 冻结的资金:%f, 冻结的手续费:%f, 分仓冻结资金:%f\n",
+                "利息基数:%f, 利息收入:%f, 入金金额:%f, 出金金额:%f, 冻结的保证金:%f, 冻结的资金:%f, 冻结的手续费:%f\n",
                 account.getInterestBase(), account.getInterest(), account.getDeposit(), account.getWithdraw(),
-                account.getFrozenMargin(), account.getFrozenCash(), account.getFrozenCommission(),
-                account.getFrozenPartition());
+                account.getFrozenMargin(), account.getFrozenCash(), account.getFrozenCommission());
 
         //TODO : 可用资金
         System.out.printf(
@@ -470,17 +470,18 @@ public class Output {
         System.out.println();
     }
 
-    //打印组合单腿汇总
-    public static void pInvestorPositionForComb(String head, @NotNull CThostFtdcInvestorPositionForCombField act) {
-        System.out.println(head + " 组合单腿汇总 ---> :");
-        System.out.printf(
-                "交易所:%s, 经纪公司:%s, 投资人:%s, 合约代码:%s, 投机套保标志:%c, 买卖方向:%c, 数量:%d, 单腿编号:%d\n",
-                act.getExchangeID(), act.getBrokerID(), act.getInvestorID(), act.getLegInstrumentID(),
-                act.getLegHedgeFlag(), act.getLegDirection(), act.getTotalAmt(), act.getLegID());
-
-        System.out.printf(
-                "组合优先级:%s, 组合合约代码:%s, 组合投机套保标志:%c, 组合类型:%c\n",
-                act.getTradeGroupID(), act.getCombInstrumentID(), act.getCombHedgeFlag(), act.getCombinationType());
-        System.out.println();
-    }
+//    新版本不再支持
+//    //打印组合单腿汇总
+//    public static void pInvestorPositionForComb(String head, @NotNull CThostFtdcInvestorPositionForCombField act) {
+//        System.out.println(head + " 组合单腿汇总 ---> :");
+//        System.out.printf(
+//                "交易所:%s, 经纪公司:%s, 投资人:%s, 合约代码:%s, 投机套保标志:%c, 买卖方向:%c, 数量:%d, 单腿编号:%d\n",
+//                act.getExchangeID(), act.getBrokerID(), act.getInvestorID(), act.getLegInstrumentID(),
+//                act.getLegHedgeFlag(), act.getLegDirection(), act.getTotalAmt(), act.getLegID());
+//
+//        System.out.printf(
+//                "组合优先级:%s, 组合合约代码:%s, 组合投机套保标志:%c, 组合类型:%c\n",
+//                act.getTradeGroupID(), act.getCombInstrumentID(), act.getCombHedgeFlag(), act.getCombinationType());
+//        System.out.println();
+//    }
 }

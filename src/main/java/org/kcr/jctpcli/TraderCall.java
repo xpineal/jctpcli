@@ -224,15 +224,16 @@ public class TraderCall {
         return qry;
     }
 
-    //生成查询单腿汇总的对象
-    public CThostFtdcQryInvestorPositionForCombField genQryInvestorPositionForComb() {
-        var qry = new CThostFtdcQryInvestorPositionForCombField();
-        qry.setBrokerID(brokerID);
-        qry.setInvestorID(investorID);
-        qry.setExchangeID("");
-        qry.setLegInstrumentID("");
-        return qry;
-    }
+//    新版本不再支持
+//    //生成查询单腿汇总的对象
+//    public CThostFtdcQryInvestorPositionForCombField genQryInvestorPositionForComb() {
+//        var qry = new CThostFtdcQryInvestorPositionForCombField();
+//        qry.setBrokerID(brokerID);
+//        qry.setInvestorID(investorID);
+//        qry.setExchangeID("");
+//        qry.setLegInstrumentID("");
+//        return qry;
+//    }
 
     //认证
     public TraderReq authenticate() {
@@ -387,13 +388,14 @@ public class TraderCall {
         return r;
     }
 
-    //查询单腿汇总
-    public TraderReq queryInvestorPositionForComb() {
-        var qry = genQryInvestorPositionForComb();
-        var r = genReq();
-        r.resultCode = traderApi.ReqQryInvestorPositionForComb(qry, r.requestID);
-        return r;
-    }
+//    新版本不再支持
+//    //查询单腿汇总
+//    public TraderReq queryInvestorPositionForComb() {
+//        var qry = genQryInvestorPositionForComb();
+//        var r = genReq();
+//        r.resultCode = traderApi.ReqQryInvestorPositionForComb(qry, r.requestID);
+//        return r;
+//    }
 
     //生成request
     @Contract(" -> new")

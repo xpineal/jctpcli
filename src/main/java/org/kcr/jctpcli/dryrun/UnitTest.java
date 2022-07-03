@@ -31,7 +31,8 @@ public class UnitTest {
         Output.pDepthMarketData("", new CThostFtdcDepthMarketDataField());
         Output.pInputOrderAction("", new CThostFtdcInputOrderActionField());
         Output.pOrderAction("", new CThostFtdcOrderActionField());
-        Output.pInvestorPositionForComb("", new CThostFtdcInvestorPositionForCombField());
+        //新版本不再支持
+        //Output.pInvestorPositionForComb("", new CThostFtdcInvestorPositionForCombField());
     }
 
     public static void main(String[] args) throws InterruptedException {
