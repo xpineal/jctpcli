@@ -39,6 +39,7 @@ public class Mix {
 		// 交易环境
 		var envCtn = new EnvCtn(traderCall);
 		var tradeSpi = new MixTradeSpi(traderCall, envCtn);
+		traderCall.setOrderTrace(envCtn.orderTrace);
 		traderApi.RegisterSpi(tradeSpi);
 		traderApi.SubscribePrivateTopic(THOST_TE_RESUME_TYPE.THOST_TERT_QUICK);
 		traderApi.SubscribePublicTopic(THOST_TE_RESUME_TYPE.THOST_TERT_QUICK);

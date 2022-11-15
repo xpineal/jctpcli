@@ -1,5 +1,6 @@
 package org.kcr.jctpcli.env;
 
+import org.kcr.jctpcli.trader.OrderTrace;
 import org.kcr.jctpcli.trader.TraderCall;
 import org.kcr.jctpcli.util.Prameter;
 import org.kr.jctp.*;
@@ -26,6 +27,9 @@ public class EnvCtn {
 	// 手续费
 	public boolean bInstrumentCommissionRate;
 
+	// 订单跟踪
+	public OrderTrace orderTrace;
+
 	// 构造函数
 	public EnvCtn(TraderCall traderCall) {
 		this.traderCall = traderCall;
@@ -34,6 +38,7 @@ public class EnvCtn {
 		this.bAccount = false;
 		this.bInstrument = false;
 		this.bInstrumentCommissionRate = false;
+		this.orderTrace = new OrderTrace();
 	}
 
 	// 是否已经完成登录

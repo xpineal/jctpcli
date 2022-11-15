@@ -202,7 +202,9 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 		
 		// 如果报单被交易所拒绝，此处就返回被动撤单
 		if (pOrder.getOrderStatus() == jctpConstants.THOST_FTDC_OST_Canceled) {			
+			// TODO: 先注释掉env.orderCancel调用，后面统一通过扩展OrderTrace的recallOK方法来处理
 			env.orderCancel(pOrder);
+			env.orderTrace.recallOK(pOrder.getOrderRef());
 		}
 
 		if (Prameter.debugMode) {
@@ -217,8 +219,10 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			System.out.println("成交通知信息回包为空");
 			return;
 		}
-		// 成交回报
+		// 成交回包
+		// TODO: 后面需要考虑是否统一由OrderTrace来控制仓位信息，这样信息更加准确和完整，也避免了重复计算
 		env.orderTrade(pTrade);
+		env.orderTrace.reduceOrder(pTrade.getOrderRef(), pTrade.getVolume(), pTrade.getPrice());
 
 		if (Prameter.debugMode) {
 			Output.pTrade("成交通知", pTrade);

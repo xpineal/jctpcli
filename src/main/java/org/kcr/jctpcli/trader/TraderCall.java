@@ -27,6 +27,7 @@ public class TraderCall {
 	private final AtomicInteger sessionIDAtom;
 	private final AtomicLong orderRefAtom;
 
+	private OrderTrace orderTrace;
 	// 构造函数
 	public TraderCall(CThostFtdcTraderApi traderApi, String brokerID, String investorID, String password, String appID,
 			String authCode) {
@@ -48,6 +49,10 @@ public class TraderCall {
 		frontIDAtom.set(frontID);
 		sessionIDAtom.set(sessionID);
 		orderRefAtom.set(orderRef);
+	}
+
+	public void setOrderTrace(OrderTrace orderTrace) {
+		this.orderTrace = orderTrace;
 	}
 
 	// 认证
@@ -305,55 +310,89 @@ public class TraderCall {
 	// 开多
 	public void openBuy(double price, int count) {
 		CThostFtdcInputOrderField cfiof = genFATOrder(price, count, true, "open");
-		addOrder(cfiof);
+		var r = addOrder(cfiof);
+		if (r.resultCode == 0) {
+			// 如果返回不是0，表示订单没有发送成功
+			// 添加到追踪hash表中
+			orderTrace.addOpenBuy(r.orderRef, count, price);
+		}
 	}
 
 	// 平多
 	public void closeBuy(double price, int count, String combOffsetFlag) {
 		CThostFtdcInputOrderField cfiof = gengGFDOrder(price, count, false, combOffsetFlag);
-		addOrder(cfiof);
+		var r = addOrder(cfiof);
+		if (r.resultCode == 0) {
+			// 如果返回不是0，表示订单没有发送成功
+			// 添加到追踪hash表中
+			orderTrace.addCloseBuy(r.orderRef, count, price);
+		}
 	}
 
 	// 开空
 	public void openSell(double price, int count) {
 		CThostFtdcInputOrderField cfiof = gengGFDOrder(price, count, false, "open");
-		addOrder(cfiof);
+		var r = addOrder(cfiof);
+		if (r.resultCode == 0) {
+			// 如果返回不是0，表示订单没有发送成功
+			// 添加到追踪hash表中
+			orderTrace.addOpenSell(r.orderRef, count, price);
+		}
 	}
 
 	// 平空
 	public void closeSell(double price, int count, String combOffsetFlag) {
 		CThostFtdcInputOrderField cfiof = gengGFDOrder(price, count, true, combOffsetFlag);
-		addOrder(cfiof);
+		var r = addOrder(cfiof);
+		if (r.resultCode == 0) {
+			// 如果返回不是0，表示订单没有发送成功
+			// 添加到追踪hash表中
+			orderTrace.addCloseSell(r.orderRef, count, price);
+		}
+	}
+
+	// 批量撤单(撤出所有未成交的单)
+	public void cancelAllNotTradeOrders() {
+		// 先获取所有未成交订单
+		var orderRefs = orderTrace.remainOrderKeys();
+		for (String orderRef:orderRefs) {
+			cancelOrder(orderRef);
+		}
+	}
+
+	// 撤单
+	public void cancelOrder(String orderRef) {
+		var order = genCancelOrder(orderRef);
+		var r = cancelOrder(order);
+		if (r.resultCode == 0) {
+			// 如果返回不是0，表示撤单没有发送成功
+			// 更新追踪hash表中
+			orderTrace.recall(orderRef);
+		}
+	}
+
+	// 撤单
+	private OrderReq cancelOrder(CThostFtdcInputOrderActionField order) {
+		var r = new OrderReq(reqIDAtom.getAndIncrement(), order.getOrderRef());
+		r.resultCode = traderApi.ReqOrderAction(order, r.requestID);
+		return r;
 	}
 
 	// 报单
-	public OrderReq addOrder(CThostFtdcInputOrderField order) {
+	private OrderReq addOrder(CThostFtdcInputOrderField order) {
 		var r = new OrderReq(reqIDAtom.getAndIncrement(), order.getOrderRef());
 		r.resultCode = traderApi.ReqOrderInsert(order, r.requestID);
 		return r;
 	}
 
 	// 生成撤单的对象
-	public CThostFtdcInputOrderActionField genCancelOrder(String exchangeID, String orderSysID, String instrumentID) {
+	private CThostFtdcInputOrderActionField genCancelOrder(String orderRef) {
 		var action = new CThostFtdcInputOrderActionField();
-		action.setExchangeID(exchangeID);
-		action.setOrderSysID(orderSysID);
-		action.setInstrumentID(instrumentID);
+		action.setOrderRef(orderRef);
+		action.setFrontID(frontIDAtom.get());
+		action.setSessionID(sessionIDAtom.get());
 		action.setActionFlag(jctpConstants.THOST_FTDC_AF_Delete);
 		return action;
-	}
-
-	// 撤单
-	public OrderReq cancelOrder(String exchangeID, String orderSysID, String instrumentID) {
-		var order = genCancelOrder(exchangeID, orderSysID, instrumentID);
-		return cancelOrder(order);
-	}
-
-	// 撤单
-	public OrderReq cancelOrder(CThostFtdcInputOrderActionField order) {
-		var r = new OrderReq(reqIDAtom.getAndIncrement(), order.getOrderRef());
-		r.resultCode = traderApi.ReqOrderAction(order, r.requestID);
-		return r;
 	}
 
 //	// 生成查询行情的对象
