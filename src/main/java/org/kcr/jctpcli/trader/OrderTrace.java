@@ -72,6 +72,17 @@ public class OrderTrace {
         lock.unlock();
     }
 
+    public ArrayList<String> allOrderKeys() {
+        lock.lock();
+        var size = orderTrackHash.size();
+        var a = new ArrayList<String>(size);
+        orderTrackHash.forEach((key, value)->{
+            a.add(key);
+        });
+        lock.unlock();
+        return a;
+    }
+
     // 获取所有没有成交的订单单号
     public ArrayList<String> remainOrderKeys() {
         lock.lock();

@@ -360,6 +360,15 @@ public class TraderCall {
 		}
 	}
 
+	// 批量撤所有单
+	public void cancelAllOrders() {
+		// 先获取所有未成交订单
+		var orderRefs = orderTrace.allOrderKeys();
+		for (String orderRef:orderRefs) {
+			cancelOrder(orderRef);
+		}
+	}
+
 	// 撤单
 	public void cancelOrder(String orderRef) {
 		var order = genCancelOrder(orderRef);

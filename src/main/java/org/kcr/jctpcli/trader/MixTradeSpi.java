@@ -166,6 +166,7 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			Output.pInputOrder("报单错误", pInputOrder);
 		}
 
+		// TODO : 后续可以考虑在这里移除追踪的订单，按撤单成功处理
 	}
 
 	// 报单操作错误回报
@@ -184,6 +185,7 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			Output.pOrderAction("报单操作错误回报", pOrderAction);
 		}
 
+		// TODO : 撤单失败，理论上不用处理，因为前面的交易信息肯定回包了，后续可以观察
 	}
 
 	// 交易异常回包
@@ -245,6 +247,7 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			Output.pInputOrder("报单录入请求响应", pInputOrder);
 		}
 
+		// TODO ：理论上不用处理，这里是mini的回包
 	}
 
 	// 报单操作请求响应
@@ -263,6 +266,7 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			Output.pInputOrderAction("报单操作请求响应", pInputOrderAction);
 		}
 
+		// TODO : 理论上不用处理，这里是mini的撤单回包
 	}
 
 	// 请求查询报单响应
