@@ -1,9 +1,9 @@
 package org.kcr.jctpcli.md;
 
 import org.kcr.jctpcli.cnf.Cnf;
-import org.kcr.jctpcli.env.Commerce;
+import org.kcr.jctpcli.old.Commerce;
 import org.kcr.jctpcli.util.Output;
-import org.kcr.jctpcli.util.Prameter;
+import org.kcr.jctpcli.old.Prameter;
 import org.kr.jctp.*;
 
 public class MixMdSpi extends CThostFtdcMdSpi {
@@ -74,7 +74,7 @@ public class MixMdSpi extends CThostFtdcMdSpi {
 //		double settlemenPrice = pDepthMarketData.getSettlementPrice();
 //		double preSettlemenPrice = pDepthMarketData.getPreSettlementPrice();
 
-//		commerce.marketProcess(updateTime, lastPrice, buyPrice, sellPrice, buyVolume, sellVolume);
+		commerce.marketProcess(updateTime, lastPrice, bidPrice, askPrice, bidVolume, askVolume);
 
 		Prameter.recorder.writeMD(updateTime + "," + Double.toString(bidPrice)
 											 + "," + Integer.toString(bidVolume)
@@ -82,10 +82,10 @@ public class MixMdSpi extends CThostFtdcMdSpi {
 											 + "," + Integer.toString(askVolume)
 											 + "," + Double.toString(lastPrice)
 											 + "," + Integer.toString(volume)
-											 + "," + Double.toString(turnover));											 
+											 + "," + Double.toString(turnover));
 //											 + "," + Double.toString(averagePrice)
 //											 + "," + Double.toString(preSettlemenPrice)
-//											 + "," + Double.toString(settlemenPrice)										 
+//											 + "," + Double.toString(settlemenPrice)
 //											 + "," + Double.toString(preOpenInterest)
 //											 + "," + Double.toString(openInterest)
 

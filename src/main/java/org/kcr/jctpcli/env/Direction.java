@@ -1,4 +1,4 @@
-package org.kcr.jctpcli.trader;
+package org.kcr.jctpcli.env;
 
 public enum Direction {
     OpenBuy, //开多

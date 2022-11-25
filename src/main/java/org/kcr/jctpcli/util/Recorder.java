@@ -1,5 +1,7 @@
 package org.kcr.jctpcli.util;
 
+import org.kcr.jctpcli.old.Prameter;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;

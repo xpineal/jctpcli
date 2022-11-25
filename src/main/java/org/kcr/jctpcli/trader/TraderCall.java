@@ -1,6 +1,6 @@
 package org.kcr.jctpcli.trader;
 
-import org.kcr.jctpcli.util.Prameter;
+import org.kcr.jctpcli.env.Broker;
 import org.kr.jctp.*;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,11 +27,12 @@ public class TraderCall {
 	private final AtomicInteger sessionIDAtom;
 	private final AtomicLong orderRefAtom;
 
-	private OrderTrace orderTrace;
+	private Broker broker;
 	// 构造函数
-	public TraderCall(CThostFtdcTraderApi traderApi, String brokerID, String investorID, String password, String appID,
-			String authCode) {
+	public TraderCall(CThostFtdcTraderApi traderApi, Broker broker,
+					  String brokerID, String investorID, String password, String appID, String authCode) {
 		this.traderApi = traderApi;
+		this.broker = broker;
 		this.brokerID = brokerID;
 		this.investorID = investorID;
 		this.password = password;
@@ -49,10 +50,6 @@ public class TraderCall {
 		frontIDAtom.set(frontID);
 		sessionIDAtom.set(sessionID);
 		orderRefAtom.set(orderRef);
-	}
-
-	public void setOrderTrace(OrderTrace orderTrace) {
-		this.orderTrace = orderTrace;
 	}
 
 	// 认证
@@ -264,12 +261,12 @@ public class TraderCall {
 		var orderRef = Long.toString(orderRefAtom.incrementAndGet());
 		order.setBrokerID(brokerID);
 		order.setInvestorID(investorID);
-		order.setInstrumentID(Prameter.instrumentID);
+		order.setInstrumentID(broker.instrumentID);
 		order.setOrderRef(orderRef);
 		// 暂时只使用投机的标记
 		order.setCombHedgeFlag(HFSpeculation);
 		order.setVolumeTotalOriginal(vol);
-		order.setExchangeID(Prameter.exchangeID);
+		order.setExchangeID(broker.exchangeID);
 
 		if (bsFlg) {
 			order.setDirection(jctpConstants.THOST_FTDC_D_Buy);
@@ -314,7 +311,7 @@ public class TraderCall {
 		if (r.resultCode == 0) {
 			// 如果返回不是0，表示订单没有发送成功
 			// 添加到追踪hash表中
-			orderTrace.addOpenBuy(r.orderRef, count, price);
+			broker.OnOpenBuyReq(r.orderRef, count, price);
 		}
 	}
 
@@ -325,7 +322,7 @@ public class TraderCall {
 		if (r.resultCode == 0) {
 			// 如果返回不是0，表示订单没有发送成功
 			// 添加到追踪hash表中
-			orderTrace.addCloseBuy(r.orderRef, count, price);
+			broker.OnCloseBuyReq(r.orderRef, count, price);
 		}
 	}
 
@@ -336,7 +333,7 @@ public class TraderCall {
 		if (r.resultCode == 0) {
 			// 如果返回不是0，表示订单没有发送成功
 			// 添加到追踪hash表中
-			orderTrace.addOpenSell(r.orderRef, count, price);
+			broker.OnOpenSellReq(r.orderRef, count, price);
 		}
 	}
 
@@ -347,14 +344,14 @@ public class TraderCall {
 		if (r.resultCode == 0) {
 			// 如果返回不是0，表示订单没有发送成功
 			// 添加到追踪hash表中
-			orderTrace.addCloseSell(r.orderRef, count, price);
+			broker.OnCloseSellReq(r.orderRef, count, price);
 		}
 	}
 
 	// 批量撤单(撤出所有未成交的单)
 	public void cancelAllNotTradeOrders() {
 		// 先获取所有未成交订单
-		var orderRefs = orderTrace.remainOrderKeys();
+		var orderRefs = broker.remainOrderKeys();
 		for (String orderRef:orderRefs) {
 			cancelOrder(orderRef);
 		}
@@ -363,7 +360,7 @@ public class TraderCall {
 	// 批量撤所有单
 	public void cancelAllOrders() {
 		// 先获取所有未成交订单
-		var orderRefs = orderTrace.allOrderKeys();
+		var orderRefs = broker.allOrderKeys();
 		for (String orderRef:orderRefs) {
 			cancelOrder(orderRef);
 		}
@@ -376,7 +373,7 @@ public class TraderCall {
 		if (r.resultCode == 0) {
 			// 如果返回不是0，表示撤单没有发送成功
 			// 更新追踪hash表中
-			orderTrace.recall(orderRef);
+			broker.OnOrderCancelReq(orderRef);
 		}
 	}
 

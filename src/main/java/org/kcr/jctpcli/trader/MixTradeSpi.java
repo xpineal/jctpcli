@@ -1,18 +1,19 @@
 package org.kcr.jctpcli.trader;
 
-import org.kcr.jctpcli.env.EnvCtn;
+import org.kcr.jctpcli.env.Fence;
+import org.kcr.jctpcli.env.Broker;
 import org.kcr.jctpcli.util.Output;
-import org.kcr.jctpcli.util.Prameter;
+import org.kcr.jctpcli.old.Prameter;
 import org.kr.jctp.*;
 
 public class MixTradeSpi extends CThostFtdcTraderSpi {
-	private final TraderCall traderCall;
+	private TraderCall traderCall;
 	// 行情交易对象
-	private final EnvCtn env;
+	private Broker broker;
 
-	public MixTradeSpi(TraderCall traderCall, EnvCtn env) {
+	public MixTradeSpi(TraderCall traderCall, Broker broker) {
 		this.traderCall = traderCall;
-		this.env = env;
+		this.broker = broker;
 	}
 
 	@Override
@@ -63,11 +64,11 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 		// 设置登录后相关的字段
 		setupEnvAfterLogin(pRspUserLogin);
 		// 登录后查询相关数据
-		setupPrameterAfterLogin();
+		setupParameterAfterLogin();
 
 		Prameter.tradingDay = traderCall.getTradingDay();
 
-		env.bLogin = true;
+		broker.fence.doneLogin();
 
 		if (Prameter.debugMode) {
 			Output.pLoginInfo("登录请求响应", pRspUserLogin);
@@ -105,8 +106,8 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			return;
 		}
 		// 查询资金账户可用资金
-		Prameter.setAvailable(pTradingAccount);
-		env.bAccount = true;
+		broker.available = pTradingAccount.getAvailable();
+		broker.fence.doneAccount();
 
 		if (Prameter.debugMode) {
 			Output.pTradingAccount("请求查询资金账户响应", pTradingAccount);
@@ -201,12 +202,10 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			System.out.println("报单通知信息回包为空");
 			return;
 		}
-		
-		// 如果报单被交易所拒绝，此处就返回被动撤单
-		if (pOrder.getOrderStatus() == jctpConstants.THOST_FTDC_OST_Canceled) {			
-			// TODO: 先注释掉env.orderCancel调用，后面统一通过扩展OrderTrace的recallOK方法来处理
-			env.orderCancel(pOrder);
-			env.orderTrace.recallOK(pOrder.getOrderRef());
+
+		// 被动撤单和主动撤单都会返回此状态
+		if (pOrder.getOrderStatus() == jctpConstants.THOST_FTDC_OST_Canceled) {
+			broker.orderTracker.OnOrderCancelled(pOrder.getOrderRef());
 		}
 
 		if (Prameter.debugMode) {
@@ -222,10 +221,8 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			return;
 		}
 		// 成交回包
-		// TODO: 后面需要考虑是否统一由OrderTrace来控制仓位信息，这样信息更加准确和完整，也避免了重复计算
-		env.orderTrade(pTrade);
-		env.orderTrace.reduceOrder(pTrade.getOrderRef(), pTrade.getVolume(), pTrade.getPrice());
-
+		var r = broker.orderTracker.OnOrderTrade(pTrade.getOrderRef(), pTrade.getVolume(), pTrade.getPrice());
+		broker.holder.OnOrderTrade(r);
 		if (Prameter.debugMode) {
 			Output.pTrade("成交通知", pTrade);
 		}
@@ -317,8 +314,8 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 		}
 
 		// 设置保证金率 合约乘数 单位价格
-		Prameter.setInstrutmentRatio(pInstrument);
-		env.bInstrument = true;
+		broker.instrument.setInstrumentRatio(pInstrument);
+		broker.fence.doneInstrument();
 
 		if (Prameter.debugMode) {
 			Output.pInstrument("请求查询合约响应", pInstrument);
@@ -357,8 +354,8 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			return;
 		}
 		// 查询手续费及率
-		Prameter.setRatio(pInstrumentCommissionRate);
-		env.bInstrumentCommissionRate = true;
+		broker.instrument.setRatio(pInstrumentCommissionRate);
+		broker.fence.doneCommissionRate();
 
 		if (Prameter.debugMode) {
 			Output.pInstrumentCommissionRate("请求查询合约手续费率响应", pInstrumentCommissionRate);
@@ -382,7 +379,7 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 	}
 
 	// 设置登录后相关参数
-	private void setupPrameterAfterLogin() {
+	private void setupParameterAfterLogin() {
 		// 查询投资人信息
 		// traderCall.queryInvestor();
 		// 查询资金账户
@@ -390,11 +387,10 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 		// 查询持仓
 		traderCall.queryInvestorPosition("");
 		// 查询合约
-		traderCall.queryInstrument(Prameter.instrumentID, Prameter.exchangeID);
+		traderCall.queryInstrument(broker.instrumentID, broker.exchangeID);
 		// 查询保证金
 		// traderCall.queryInstrumentMarginRate(Prameter.instrumentID);
 		// 查询手续费
-		traderCall.queryInstrumentCommissionRate(Prameter.instrumentID);
-
+		traderCall.queryInstrumentCommissionRate(broker.instrumentID);
 	}
 }

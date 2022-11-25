@@ -1,12 +1,13 @@
 package org.kcr.jctpcli;
 
 import org.kcr.jctpcli.cnf.FJson;
-import org.kcr.jctpcli.env.Commerce;
-import org.kcr.jctpcli.env.EnvCtn;
+import org.kcr.jctpcli.old.Commerce;
+import org.kcr.jctpcli.env.Fence;
 import org.kcr.jctpcli.md.MixMdSpi;
+import org.kcr.jctpcli.env.Broker;
 import org.kcr.jctpcli.trader.MixTradeSpi;
 import org.kcr.jctpcli.trader.TraderCall;
-import org.kcr.jctpcli.util.Prameter;
+import org.kcr.jctpcli.old.Prameter;
 import org.kr.jctp.CThostFtdcMdApi;
 import org.kr.jctp.CThostFtdcTraderApi;
 import org.kr.jctp.THOST_TE_RESUME_TYPE;
@@ -29,17 +30,15 @@ public class Mix {
 			System.out.println("没有相关的合约配置");
 			return;
 		}
-		// 设置合约及交易所 注：暂考虑一个合约
-		Prameter.setInsExchangeId(instrList[0].getInstrumentID(), instrList[0].getExchangeID());
 
 		// 交易接口的封装
 		var traderApi = CThostFtdcTraderApi.CreateFtdcTraderApi();
-		var traderCall = new TraderCall(traderApi, cnf.getBrokerID(), cnf.getAccountID(), cnf.getPassword(),
+		// 设置合约及交易所 注：暂考虑一个合约
+		var broker = new Broker(instrList[0].getExchangeID(), instrList[0].getInstrumentID());
+		var traderCall = new TraderCall(traderApi, broker, cnf.getBrokerID(), cnf.getAccountID(), cnf.getPassword(),
 				cnf.getAppID(), cnf.getAuthCode());
 		// 交易环境
-		var envCtn = new EnvCtn(traderCall);
-		var tradeSpi = new MixTradeSpi(traderCall, envCtn);
-		traderCall.setOrderTrace(envCtn.orderTrace);
+		var tradeSpi = new MixTradeSpi(traderCall, broker);
 		traderApi.RegisterSpi(tradeSpi);
 		traderApi.SubscribePrivateTopic(THOST_TE_RESUME_TYPE.THOST_TERT_QUICK);
 		traderApi.SubscribePublicTopic(THOST_TE_RESUME_TYPE.THOST_TERT_QUICK);
@@ -47,13 +46,14 @@ public class Mix {
 		traderApi.Init();
 
 		while (true) {
-			if (envCtn.isLogin()) {
+			if (broker.fence.ready()) {
 				break;
 			}
 			Thread.sleep(300);
 		}
 
-		Prameter.outPut();
+		// 打印合约
+		broker.instrument.outPut();
 
 		// 测试
 		var commerce = new Commerce(traderCall);
