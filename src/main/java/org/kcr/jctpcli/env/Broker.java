@@ -1,56 +1,36 @@
 package org.kcr.jctpcli.env;
 
+import org.kcr.jctpcli.md.MarketData;
+import org.kcr.jctpcli.trader.Fence;
 import org.kcr.jctpcli.trader.TraderCall;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Broker {
-    // 交易所
-    public String exchangeID;
-    // 合约
-    public String instrumentID;
-
-    // 订单追踪
-    public OrderTracker orderTracker;
-    // 持仓统计
-    public Holder holder;
-
-    // 可用资金
-    public double available;
-
-    // 合约
-    public Instrument instrument;
-
-    // 初始化标记
-    public Fence fence;
-
-    // 锁
-    private Lock lock;
-
     // trade caller
     private TraderCall traderCall;
 
-    public Broker(TraderCall _traderCall, String _exchangeID, String _instrumentID) {
+    // 包装订单跟踪，持仓情况，资金和合约
+    public Hold hold;
+
+    public Broker(TraderCall _traderCall, Hold _hold) {
         traderCall = _traderCall;
-        exchangeID = _exchangeID;
-        instrumentID = _instrumentID;
-        orderTracker = new OrderTracker();
-        holder = new Holder();
-        instrument = new Instrument();
-        fence = new Fence();
-        lock = new ReentrantLock();
+        hold = _hold;
     }
 
+    // 使用Hold的lock
     public void lock() {
-        lock.lock();
+        hold.lock();
     }
 
+    // 使用Hold的lock
     public void unlock() {
-        lock.unlock();
+        hold.unlock();
     }
 
-    public void openBuy(double price, int volume) {
+    public void marketProcess(MarketData md) {
 
     }
+
 }

@@ -1,6 +1,6 @@
-package org.kcr.jctpcli.util;
+package org.kcr.jctpcli.md;
 
-import org.kcr.jctpcli.old.Prameter;
+import org.kcr.jctpcli.env.Parameter;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -13,7 +13,7 @@ public class Recorder {
 
 	public Recorder() {
 		try {
-			ssWriter = new BufferedWriter(new FileWriter(Prameter.tradingDay + ".csv", true));
+			ssWriter = new BufferedWriter(new FileWriter(Parameter.tradingDay + ".csv", true));
 			// mmWriter = new BufferedWriter(new FileWriter(Prameter.tradingDay +
 			// "mmRecorder.csv", true));
 		} catch (IOException e) {

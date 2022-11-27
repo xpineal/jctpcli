@@ -1,19 +1,22 @@
 package org.kcr.jctpcli.trader;
 
-import org.kcr.jctpcli.env.Fence;
-import org.kcr.jctpcli.env.Broker;
+import org.kcr.jctpcli.env.Hold;
+import org.kcr.jctpcli.env.Parameter;
 import org.kcr.jctpcli.util.Output;
-import org.kcr.jctpcli.old.Prameter;
 import org.kr.jctp.*;
 
 public class MixTradeSpi extends CThostFtdcTraderSpi {
-	private TraderCall traderCall;
-	// 行情交易对象
-	private Broker broker;
+	// 初始化标记
+	public Fence fence;
 
-	public MixTradeSpi(TraderCall traderCall, Broker broker) {
-		this.traderCall = traderCall;
-		this.broker = broker;
+	private TraderCall traderCall;
+	// 持仓对象
+	private Hold hold;
+
+	public MixTradeSpi(TraderCall _traderCall, Hold _hold) {
+		traderCall = _traderCall;
+		hold = _hold;
+		fence = new Fence();
 	}
 
 	@Override
@@ -45,7 +48,7 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 
 		traderCall.login();
 
-		if (Prameter.debugMode) {
+		if (Parameter.debugMode) {
 			Output.pRspAuth("客户端认证响应", pRspAuthenticateField);
 		}
 	}
@@ -66,11 +69,11 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 		// 登录后查询相关数据
 		setupParameterAfterLogin();
 
-		Prameter.tradingDay = traderCall.getTradingDay();
+		Parameter.tradingDay = traderCall.getTradingDay();
 
-		broker.fence.doneLogin();
+		fence.doneLogin();
 
-		if (Prameter.debugMode) {
+		if (Parameter.debugMode) {
 			Output.pLoginInfo("登录请求响应", pRspUserLogin);
 		}
 	}
@@ -106,10 +109,10 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			return;
 		}
 		// 查询资金账户可用资金
-		broker.available = pTradingAccount.getAvailable();
-		broker.fence.doneAccount();
+		hold.available = pTradingAccount.getAvailable();
+		fence.doneAccount();
 
-		if (Prameter.debugMode) {
+		if (Parameter.debugMode) {
 			Output.pTradingAccount("请求查询资金账户响应", pTradingAccount);
 		}
 	}
@@ -128,7 +131,7 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 
 		// pInvestorPosition.getPositionDate();// ‘1’ 当日仓 ‘2‘ 历史仓
 
-		if (Prameter.debugMode) {
+		if (Parameter.debugMode) {
 			Output.pInvestorPosition("请求查询投资者持仓响应", pInvestorPosition);
 		}
 	}
@@ -163,7 +166,7 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			return;
 		}
 
-		if (Prameter.debugMode) {
+		if (Parameter.debugMode) {
 			Output.pInputOrder("报单错误", pInputOrder);
 		}
 
@@ -182,7 +185,7 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			return;
 		}
 
-		if (Prameter.debugMode) {
+		if (Parameter.debugMode) {
 			Output.pOrderAction("报单操作错误回报", pOrderAction);
 		}
 
@@ -205,10 +208,12 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 
 		// 被动撤单和主动撤单都会返回此状态
 		if (pOrder.getOrderStatus() == jctpConstants.THOST_FTDC_OST_Canceled) {
-			broker.orderTracker.OnOrderCancelled(pOrder.getOrderRef());
+			hold.lock();
+			hold.orderTracker.OnOrderCancelled(pOrder.getOrderRef());
+			hold.unlock();
 		}
 
-		if (Prameter.debugMode) {
+		if (Parameter.debugMode) {
 			Output.pOrder("报单通知", pOrder);
 		}
 	}
@@ -221,9 +226,11 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			return;
 		}
 		// 成交回包
-		var r = broker.orderTracker.OnOrderTrade(pTrade.getOrderRef(), pTrade.getVolume(), pTrade.getPrice());
-		broker.holder.OnOrderTrade(r);
-		if (Prameter.debugMode) {
+		hold.lock();
+		var r = hold.orderTracker.OnOrderTrade(pTrade.getOrderRef(), pTrade.getVolume(), pTrade.getPrice());
+		hold.instrument.OnOrderTrade(r);
+		hold.unlock();
+		if (Parameter.debugMode) {
 			Output.pTrade("成交通知", pTrade);
 		}
 	}
@@ -240,7 +247,7 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			return;
 		}
 
-		if (Prameter.debugMode) {
+		if (Parameter.debugMode) {
 			Output.pInputOrder("报单录入请求响应", pInputOrder);
 		}
 
@@ -259,7 +266,7 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			return;
 		}
 
-		if (Prameter.debugMode) {
+		if (Parameter.debugMode) {
 			Output.pInputOrderAction("报单操作请求响应", pInputOrderAction);
 		}
 
@@ -278,7 +285,7 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			return;
 		}
 
-		if (Prameter.debugMode) {
+		if (Parameter.debugMode) {
 			Output.pOrder("请求查询报单响应", pOrder);
 		}
 
@@ -296,7 +303,7 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			return;
 		}
 
-		if (Prameter.debugMode) {
+		if (Parameter.debugMode) {
 			Output.pTrade("请求查询成交响应", pTrade);
 		}
 	}
@@ -314,10 +321,10 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 		}
 
 		// 设置保证金率 合约乘数 单位价格
-		broker.instrument.setInstrumentRatio(pInstrument);
-		broker.fence.doneInstrument();
+		hold.instrument.setInstrumentRatio(pInstrument);
+		fence.doneInstrument();
 
-		if (Prameter.debugMode) {
+		if (Parameter.debugMode) {
 			Output.pInstrument("请求查询合约响应", pInstrument);
 		}
 	}
@@ -354,10 +361,10 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			return;
 		}
 		// 查询手续费及率
-		broker.instrument.setRatio(pInstrumentCommissionRate);
-		broker.fence.doneCommissionRate();
+		hold.instrument.setRatio(pInstrumentCommissionRate);
+		fence.doneCommissionRate();
 
-		if (Prameter.debugMode) {
+		if (Parameter.debugMode) {
 			Output.pInstrumentCommissionRate("请求查询合约手续费率响应", pInstrumentCommissionRate);
 		}
 	}
@@ -387,10 +394,10 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 		// 查询持仓
 		traderCall.queryInvestorPosition("");
 		// 查询合约
-		traderCall.queryInstrument(broker.instrumentID, broker.exchangeID);
+		traderCall.queryInstrument(hold.instrument.instrumentID, hold.instrument.exchangeID);
 		// 查询保证金
 		// traderCall.queryInstrumentMarginRate(Prameter.instrumentID);
 		// 查询手续费
-		traderCall.queryInstrumentCommissionRate(broker.instrumentID);
+		traderCall.queryInstrumentCommissionRate(hold.instrument.instrumentID);
 	}
 }

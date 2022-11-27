@@ -1,26 +1,28 @@
 package org.kcr.jctpcli.md;
 
 import org.kcr.jctpcli.cnf.Cnf;
-import org.kcr.jctpcli.old.Commerce;
+import org.kcr.jctpcli.env.Broker;
+import org.kcr.jctpcli.env.Parameter;
 import org.kcr.jctpcli.util.Output;
-import org.kcr.jctpcli.old.Prameter;
 import org.kr.jctp.*;
 
 public class MixMdSpi extends CThostFtdcMdSpi {
 	private final CThostFtdcMdApi mdApi;
-	private final Commerce commerce;
+	private final Broker broker;
 	private final CThostFtdcReqUserLoginField loginField;
 	private final String[] instruments;
 
-	public MixMdSpi(CThostFtdcMdApi mdApi, Commerce commerce, Cnf cnf) {
-		this.mdApi = mdApi;
-		this.commerce = commerce;
-		this.loginField = new CThostFtdcReqUserLoginField();
-		loginField.setBrokerID(cnf.getBrokerID());
-		loginField.setUserID(cnf.getAccountID());
-		loginField.setPassword(cnf.getPassword());
-		this.instruments = cnf.getSymbols();
-		Prameter.initRecorder();
+	private Recorder recorder;
+
+	public MixMdSpi(CThostFtdcMdApi _mdApi, Broker _broker, Cnf _cnf) {
+		mdApi = _mdApi;
+		broker = _broker;
+		loginField = new CThostFtdcReqUserLoginField();
+		loginField.setBrokerID(_cnf.getBrokerID());
+		loginField.setUserID(_cnf.getAccountID());
+		loginField.setPassword(_cnf.getPassword());
+		instruments = _cnf.getSymbols();
+		recorder = new Recorder();
 	}
 
 	@Override
@@ -59,39 +61,13 @@ public class MixMdSpi extends CThostFtdcMdSpi {
 
 	@Override
 	public void OnRtnDepthMarketData(CThostFtdcDepthMarketDataField pDepthMarketData) {
-		// 测试
-		String updateTime = pDepthMarketData.getUpdateTime();
-		double bidPrice = pDepthMarketData.getBidPrice1();
-		int bidVolume = pDepthMarketData.getBidVolume1();
-		double askPrice = pDepthMarketData.getAskPrice1();
-		int askVolume = pDepthMarketData.getAskVolume1();
-		double lastPrice = pDepthMarketData.getLastPrice();
-		int volume = pDepthMarketData.getVolume();
-		double turnover = pDepthMarketData.getTurnover();
-//		double averagePrice = pDepthMarketData.getAveragePrice();
-//		double openInterest = pDepthMarketData.getOpenInterest();
-//		double preOpenInterest = pDepthMarketData.getPreOpenInterest();
-//		double settlemenPrice = pDepthMarketData.getSettlementPrice();
-//		double preSettlemenPrice = pDepthMarketData.getPreSettlementPrice();
-
-		commerce.marketProcess(updateTime, lastPrice, bidPrice, askPrice, bidVolume, askVolume);
-
-		Prameter.recorder.writeMD(updateTime + "," + Double.toString(bidPrice)
-											 + "," + Integer.toString(bidVolume)
-											 + "," + Double.toString(askPrice)
-											 + "," + Integer.toString(askVolume)
-											 + "," + Double.toString(lastPrice)
-											 + "," + Integer.toString(volume)
-											 + "," + Double.toString(turnover));
-//											 + "," + Double.toString(averagePrice)
-//											 + "," + Double.toString(preSettlemenPrice)
-//											 + "," + Double.toString(settlemenPrice)
-//											 + "," + Double.toString(preOpenInterest)
-//											 + "," + Double.toString(openInterest)
-
-//		if (Prameter.debugMode) {
-//			Output.pDepthMarketData("行情", pDepthMarketData);
-//		}
+		var md = new MarketData(pDepthMarketData);
+		broker.lock();
+		broker.marketProcess(md);
+		if (Parameter.recordMd) {
+			recorder.writeMD(md.brief());
+		}
+		broker.unlock();
 	}
 
 }

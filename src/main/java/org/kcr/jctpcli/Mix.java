@@ -1,13 +1,10 @@
 package org.kcr.jctpcli;
 
 import org.kcr.jctpcli.cnf.FJson;
-import org.kcr.jctpcli.old.Commerce;
-import org.kcr.jctpcli.env.Fence;
+import org.kcr.jctpcli.env.*;
 import org.kcr.jctpcli.md.MixMdSpi;
-import org.kcr.jctpcli.env.Broker;
 import org.kcr.jctpcli.trader.MixTradeSpi;
 import org.kcr.jctpcli.trader.TraderCall;
-import org.kcr.jctpcli.old.Prameter;
 import org.kr.jctp.CThostFtdcMdApi;
 import org.kr.jctp.CThostFtdcTraderApi;
 import org.kr.jctp.THOST_TE_RESUME_TYPE;
@@ -17,11 +14,10 @@ public class Mix {
 		// 输出测试信息
 		if (args.length > 0) {
 			if (args[0].equals("debug")) {
-				Prameter.debugMode = true;
+				Parameter.debugMode = true;
 			}
 		}
-				
-		Prameter.debugMode = true;
+
 		// 读取配置文件
 		var cnf = FJson.readCnf("./cnf.json");
 		cnf.refresh();
@@ -33,12 +29,20 @@ public class Mix {
 
 		// 交易接口的封装
 		var traderApi = CThostFtdcTraderApi.CreateFtdcTraderApi();
+		// 订单追踪对象
+		var orderTracker = new OrderTracker();
+
+		// 下单对象
+		var traderCall = new TraderCall(traderApi, orderTracker,
+				cnf.getBrokerID(), cnf.getAccountID(), cnf.getPassword(), cnf.getAppID(), cnf.getAuthCode());
+		// 持仓
 		// 设置合约及交易所 注：暂考虑一个合约
-		var broker = new Broker(instrList[0].getExchangeID(), instrList[0].getInstrumentID());
-		var traderCall = new TraderCall(traderApi, broker, cnf.getBrokerID(), cnf.getAccountID(), cnf.getPassword(),
-				cnf.getAppID(), cnf.getAuthCode());
+		var hold = new Hold(instrList[0].getExchangeID(), instrList[0].getInstrumentID());
+		// 交易对象
+		var broker = new Broker(traderCall, hold);
+
 		// 交易环境
-		var tradeSpi = new MixTradeSpi(traderCall, broker);
+		var tradeSpi = new MixTradeSpi(traderCall, hold);
 		traderApi.RegisterSpi(tradeSpi);
 		traderApi.SubscribePrivateTopic(THOST_TE_RESUME_TYPE.THOST_TERT_QUICK);
 		traderApi.SubscribePublicTopic(THOST_TE_RESUME_TYPE.THOST_TERT_QUICK);
@@ -46,21 +50,18 @@ public class Mix {
 		traderApi.Init();
 
 		while (true) {
-			if (broker.fence.ready()) {
+			if (tradeSpi.fence.ready()) {
 				break;
 			}
 			Thread.sleep(300);
 		}
 
 		// 打印合约
-		broker.instrument.outPut();
-
-		// 测试
-		var commerce = new Commerce(traderCall);
+		hold.instrument.outPut();
 
 		// 行情环境
 		var mdApi = CThostFtdcMdApi.CreateFtdcMdApi();
-		var pMdSpi = new MixMdSpi(mdApi, commerce, cnf);
+		var pMdSpi = new MixMdSpi(mdApi, broker, cnf);
 		mdApi.RegisterSpi(pMdSpi);
 		mdApi.RegisterFront(cnf.getMdServer());
 		mdApi.Init();
