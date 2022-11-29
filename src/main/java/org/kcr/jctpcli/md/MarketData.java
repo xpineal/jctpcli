@@ -126,13 +126,16 @@ public class MarketData {
     }
 
     public String brief() {
-        return updateTime + "," + Double.toString(bidPrice1)
-                + "," + Integer.toString(bidVolume1)
-                + "," + Double.toString(askPrice1)
-                + "," + Integer.toString(askVolume1)
-                + "," + Double.toString(lastPrice)
-                + "," + Integer.toString(volume)
-                + "," + Double.toString(turnover);
+        var sb = new StringBuffer(512);
+        sb.append("updateTime:").append(updateTime).append(",");
+        sb.append("bidPrice1:").append(bidPrice1).append(",");
+        sb.append("bidVolume1:").append(bidVolume1).append(",");
+        sb.append("askPrice1:").append(askPrice1).append(",");
+        sb.append("askVolume1:").append(askVolume1).append(",");
+        sb.append("lastPrice:").append(lastPrice).append(",");
+        sb.append("volume:").append(volume).append(",");
+        sb.append("turnover:").append(turnover);
+        return sb.toString();
     }
 
 }

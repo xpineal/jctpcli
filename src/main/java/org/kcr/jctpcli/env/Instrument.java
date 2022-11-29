@@ -47,6 +47,15 @@ public class Instrument {
     // 空单利润
     public double sellProfile = 0;
 
+    // 开多手续费
+    public double openBuyFee = 0;
+    // 开空手续费
+    public double openSellFee = 0;
+    // 平多手续费
+    public double closeBuyFee = 0;
+    // 平空手续费
+    public double closeSellFee = 0;
+
     public Instrument(String _exchangeID, String _instrumentID) {
         exchangeID = _exchangeID;
         instrumentID = _instrumentID;
@@ -56,6 +65,21 @@ public class Instrument {
         exchangeID = _exchangeID;
         instrumentID = _instrumentID;
         closeToday = _closeToday;
+    }
+
+    public String holdInfo() {
+        var sb = new StringBuffer(512);
+        sb.append("buy volume:").append(buyVol).append(",");
+        sb.append("buy price:").append(buyPrice).append(",");
+        sb.append("sell volume:").append(sellVol).append(",");
+        sb.append("sell price:").append(sellPrice).append(",");
+        sb.append("buy profile:").append(buyProfile).append(",");
+        sb.append("sell profile:").append(sellProfile).append(",");
+        sb.append("open buy fee:").append(openBuyFee).append(",");
+        sb.append("open sell fee:").append(openSellFee).append(",");
+        sb.append("close buy fee:").append(closeBuyFee).append(",");
+        sb.append("close sell fee:").append(closeSellFee);
+        return sb.toString();
     }
 
     public void setInstrumentRatio(CThostFtdcInstrumentField pInstrument) {
@@ -105,6 +129,11 @@ public class Instrument {
         return sellMargin(price, volume) + openRatioByVolume * volume;
     }
 
+    // 开仓手续费
+    public double openFee(int volume) {
+        return volume * openRatioByVolume;
+    }
+
     // 平仓手续费
     public double closeFee(int volume) {
         if (closeToday) {
@@ -137,8 +166,11 @@ public class Instrument {
 
     // 开多
     private void OnOpenBuy(OrderInfo order) {
-        var total = buyPrice*buyVol + order.total();
+        var of = openFee(order.orderItem.volume);
+        var total = buyPrice*buyVol + of + order.total();
         buyVol += order.orderItem.volume;
+        openBuyFee += of;
+
         if (buyVol > 0) {
             buyPrice = total/buyVol;
         }else {
@@ -148,8 +180,10 @@ public class Instrument {
 
     // 开空
     private void OnOpenSell(OrderInfo order) {
-        var total = sellPrice*sellVol + order.total();
+        var of = openFee(order.orderItem.volume);
+        var total = sellPrice*sellVol - of + order.total();
         sellVol += order.orderItem.volume;
+        openSellFee += of;
         if (sellVol > 0) {
             sellPrice = total/sellVol;
         }else {
@@ -161,18 +195,21 @@ public class Instrument {
     private double OnCloseBuy(OrderInfo order) {
         if (order.orderItem.volume > buyVol) {
             System.out.printf("错误的平多订单信息:%s\n", order.ToString());
-            buyVol = 0;
-            buyPrice = 0;
+//            buyVol = 0;
+//            buyPrice = 0;
             return 0;
         }
         // 计算获利
-        // 利润 = 平多价格*平多数量(order.total()) - 买多均价*平多数量
-        var benefit = order.total() - (buyPrice*order.orderItem.volume);
-        buyProfile += benefit;
+        // 利润 = 平多价格*平多数量(order.total()) - 买多均价*平多数量 - 手续费
+        var cf = closeFee(order.orderItem.volume);
+        var benefit = order.total() - buyPrice*order.orderItem.volume - cf;
+        closeBuyFee += cf;
         if (order.orderItem.volume == buyVol) {
             // 全平
             buyVol = 0;
             buyPrice = 0;
+            // 全平清仓才计算利润
+            buyProfile += benefit;
             return benefit;
         }
 
@@ -187,18 +224,21 @@ public class Instrument {
     private double OnCloseSell(OrderInfo order) {
         if (order.orderItem.volume > sellVol) {
             System.out.printf("错误的平空订单信息:%s\n", order.ToString());
-            sellVol = 0;
-            sellPrice = 0;
+//            sellVol = 0;
+//            sellPrice = 0;
             return 0;
         }
         // 计算获利，平空只有在价格下跌时才有利润，其利润正好和平多相反
-        // 利润 = 买空均价*平空数量 - 平空价格*平空数量(order.total())
-        var benefit = (sellPrice*order.orderItem.volume) -order.total();
-        sellProfile += benefit;
+        // 利润 = 买空均价*平空数量 - 平空价格*平空数量(order.total()) - 手续费
+        var cf = closeFee(order.orderItem.volume);
+        var benefit = (sellPrice*order.orderItem.volume) -order.total() - cf;
+        closeSellFee += cf;
         if (order.orderItem.volume == sellVol) {
             // 全平
             sellVol = 0;
             sellPrice = 0;
+            // 全平清仓才计算利润
+            sellProfile += benefit;
             return benefit;
         }
 

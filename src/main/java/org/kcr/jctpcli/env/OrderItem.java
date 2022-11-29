@@ -22,4 +22,18 @@ public class OrderItem {
         this.price = price;
         this.direction = direction;
     }
+
+    // 此订单花费
+    public double orderCancelCost(Instrument instrument) {
+        switch (direction) {
+            case OpenBuy:
+                return instrument.openBuyCost(price, volume);
+            case OpenSell:
+                return instrument.openSellCost(price, volume);
+            case CloseBuy:
+            case CloseSell:
+                return instrument.closeFee(volume);
+        }
+        return 0;
+    }
 }

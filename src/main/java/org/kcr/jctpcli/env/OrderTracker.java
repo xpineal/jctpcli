@@ -59,8 +59,8 @@ public class OrderTracker {
     }
 
     // 撤单回包后调用
-    public void OnOrderCancelled(String orderRef) {
-        orderTrackHash.remove(orderRef);
+    public OrderItem OnOrderCancelled(String orderRef) {
+        return orderTrackHash.remove(orderRef);
     }
 
     public ArrayList<String> allOrderKeys() {
@@ -68,6 +68,15 @@ public class OrderTracker {
         var a = new ArrayList<String>(size);
         orderTrackHash.forEach((key, value)->{
             a.add(key);
+        });
+        return a;
+    }
+
+    public ArrayList<OrderInfo> allOrders() {
+        var size = orderTrackHash.size();
+        var a = new ArrayList<OrderInfo>(size);
+        orderTrackHash.forEach((key, value)->{
+            a.add(new OrderInfo(key, value));
         });
         return a;
     }

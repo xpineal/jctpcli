@@ -1,5 +1,6 @@
 package org.kcr.jctpcli.trader;
 
+import org.kcr.jctpcli.env.Direction;
 import org.kcr.jctpcli.env.Hold;
 import org.kcr.jctpcli.env.Parameter;
 import org.kcr.jctpcli.util.Output;
@@ -209,7 +210,11 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 		// 被动撤单和主动撤单都会返回此状态
 		if (pOrder.getOrderStatus() == jctpConstants.THOST_FTDC_OST_Canceled) {
 			hold.lock();
-			hold.orderTracker.OnOrderCancelled(pOrder.getOrderRef());
+			var r = hold.orderTracker.OnOrderCancelled(pOrder.getOrderRef());
+			if (r != null) {
+				// 撤单成功 -- 把可用金额加回去
+				hold.available += r.orderCancelCost(hold.instrument);
+			}
 			hold.unlock();
 		}
 
@@ -228,7 +233,17 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 		// 成交回包
 		hold.lock();
 		var r = hold.orderTracker.OnOrderTrade(pTrade.getOrderRef(), pTrade.getVolume(), pTrade.getPrice());
-		hold.instrument.OnOrderTrade(r);
+		if (r != null) {
+			hold.instrument.OnOrderTrade(r);
+			if (r.orderItem.direction == Direction.CloseBuy) {
+				// 平多后回款
+				hold.available += hold.instrument.buyMargin(r.orderItem.price, r.orderItem.volume);
+			}
+			if (r.orderItem.direction == Direction.CloseSell) {
+				// 平空后回款
+				hold.available += hold.instrument.sellMargin(r.orderItem.price, r.orderItem.volume);
+			}
+		}
 		hold.unlock();
 		if (Parameter.debugMode) {
 			Output.pTrade("成交通知", pTrade);
