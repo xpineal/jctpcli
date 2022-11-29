@@ -29,15 +29,13 @@ public class Mix {
 
 		// 交易接口的封装
 		var traderApi = CThostFtdcTraderApi.CreateFtdcTraderApi();
-		// 订单追踪对象
-		var orderTracker = new OrderTracker();
-
-		// 下单对象
-		var traderCall = new TraderCall(traderApi, orderTracker,
-				cnf.getBrokerID(), cnf.getAccountID(), cnf.getPassword(), cnf.getAppID(), cnf.getAuthCode());
 		// 持仓
 		// 设置合约及交易所 注：暂考虑一个合约
 		var hold = new Hold(instrList[0].getExchangeID(), instrList[0].getInstrumentID());
+		// 下单对象
+		var traderCall = new TraderCall(traderApi, hold.orderTracker,
+				cnf.getBrokerID(), cnf.getAccountID(), cnf.getPassword(), cnf.getAppID(), cnf.getAuthCode());
+
 		// 交易对象
 		var broker = new Broker(traderCall, hold);
 

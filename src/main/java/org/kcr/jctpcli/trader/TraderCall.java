@@ -84,25 +84,6 @@ public class TraderCall implements ITrader{
 		return traderApi.GetTradingDay();
 	}
 
-//	// 生成查询报单信息的对象
-//	public CThostFtdcQryOrderField genQryOrder(String exchangeID, String instrument, String orderSysID,
-//			String startTime, String endTime) {
-//		var qry = new CThostFtdcQryOrderField();
-//		qry.setBrokerID(brokerID);
-//		qry.setInvestorID(investorID);
-//		qry.setExchangeID(exchangeID);
-//		qry.setInstrumentID(instrument);
-//		qry.setOrderSysID(orderSysID);
-//		qry.setInsertTimeStart(startTime);
-//		qry.setInsertTimeEnd(endTime);
-//		return qry;
-//	}
-
-//	// 生成查询报单信息的对象
-//	public CThostFtdcQryOrderField genQryOrder(String instrument, String exchangeID, String orderSysID) {
-//		return genQryOrder(instrument, exchangeID, orderSysID, "", "");
-//	}
-
 	// 开多
 	public boolean openBuy(Instrument instrument, double price, int volume) {
 		CThostFtdcInputOrderField cof = genGFDOrder(instrument, price, volume, true, true);
@@ -166,33 +147,6 @@ public class TraderCall implements ITrader{
 		}
 	}
 
-//	// 查询报单信息
-//	public TraderReq queryOrder(CThostFtdcQryOrderField qry) {
-//		var r = genReq();
-//		r.resultCode = traderApi.ReqQryOrder(qry, r.requestID);
-//		return r;
-//	}
-
-//	// 查询合约保证金率
-//	// ReqQryInstrumentMarginRate
-//	public CThostFtdcQryInstrumentMarginRateField genQryInstrumentMarginRate(String instrumentID) {
-//		var qry = new CThostFtdcQryInstrumentMarginRateField();
-//		qry.setBrokerID(brokerID);
-//		qry.setInvestorID(investorID);
-//		qry.setInstrumentID(instrumentID);
-//		qry.setHedgeFlag(jctpConstants.THOST_FTDC_HF_Speculation);
-//
-//		return qry;
-//
-//	}
-//
-//	public TraderReq queryInstrumentMarginRate(String instrumentID) {
-//		var qry = genQryInstrumentMarginRate(instrumentID);
-//		var r = genReq();
-//		r.resultCode = traderApi.ReqQryInstrumentMarginRate(qry, r.requestID);
-//		return r;
-//	}
-
 	public TraderReq queryInstrumentCommissionRate(String instrumentID) {
 		var qry = genQryInstrumentCommissionRate(instrumentID);
 		var r = genReq();
@@ -208,23 +162,6 @@ public class TraderCall implements ITrader{
 		return r;
 	}
 
-//	// 生成查询持仓明细的对象
-//	public CThostFtdcQryInvestorPositionDetailField genQryInvestorPositionDetail() {
-//		var qry = new CThostFtdcQryInvestorPositionDetailField();
-//		qry.setBrokerID(brokerID);
-//		qry.setInvestorID(investorID);
-//		qry.setInstrumentID("");
-//		return qry;
-//	}
-//
-//	// 查询持仓明细
-//	public TraderReq queryInvestorPositionDetail() {
-//		var qry = genQryInvestorPositionDetail();
-//		var r = genReq();
-//		r.resultCode = traderApi.ReqQryInvestorPositionDetail(qry, r.requestID);
-//		return r;
-//	}
-
 	// 查询资金账户
 	public TraderReq queryTradeAccount(String currencyID) {
 		var qry = genQryTradeAccount(currencyID);
@@ -232,41 +169,6 @@ public class TraderCall implements ITrader{
 		r.resultCode = traderApi.ReqQryTradingAccount(qry, r.requestID);
 		return r;
 	}
-
-//	// 生成查询投资者的对象
-//	public CThostFtdcQryInvestorField genQryInvestor() {
-//		var qry = new CThostFtdcQryInvestorField();
-//		qry.setBrokerID(brokerID);
-//		qry.setInvestorID(investorID);
-//		return qry;
-//	}
-//
-//	// 查询投资者
-//	public TraderReq queryInvestor() {
-//		var qry = genQryInvestor();
-//		var r = genReq();
-//		r.resultCode = traderApi.ReqQryInvestor(qry, r.requestID);
-//		return r;
-//	}
-
-	// 生成查询单腿汇总的对象
-//	public CThostFtdcQryInvestorPositionForCombField genQryInvestorPositionForComb() {
-//		var qry = new CThostFtdcQryInvestorPositionForCombField();
-//		qry.setBrokerID(brokerID);
-//		qry.setInvestorID(investorID);
-//		qry.setExchangeID("");
-//		qry.setLegInstrumentID("");
-//		return qry;
-//	}
-
-	// 查询单腿汇总
-//	public TraderReq queryInvestorPositionForComb() {
-//		var qry = genQryInvestorPositionForComb();
-//		var r = genReq();
-//		r.resultCode = traderApi.ReqQryInvestorPositionForComb(qry, r.requestID);
-//		return r;
-//	}
-
 
 	// 生成查询投资者持仓的对象
 	private CThostFtdcQryInvestorPositionField genQryInvestorPosition(String instrumentID) {
@@ -318,12 +220,6 @@ public class TraderCall implements ITrader{
 		return qry;
 	}
 
-
-//	public CThostFtdcInputOrderField genFATOrder(
-//			Instrument instrument, double price, int vol, boolean bsFlg, boolean isOpen) {
-//		return genOrder(instrument, price, vol, bsFlg, isOpen, jctpConstants.THOST_FTDC_TC_IOC);
-//	}
-
 	private CThostFtdcInputOrderField genGFDOrder(
 			Instrument instrument, double price, int vol, boolean bsFlg, boolean isOpen) {
 		return genOrder(instrument, price, vol, bsFlg, isOpen, jctpConstants.THOST_FTDC_TC_GFD);
@@ -373,24 +269,6 @@ public class TraderCall implements ITrader{
 		return order;
 	}
 
-//	// 批量撤单(撤出所有未成交的单)
-//	public void cancelAllNotTradeOrders() {
-//		// 先获取所有未成交订单
-//		var orderRefs = orderTracker.remainOrderKeys();
-//		for (String orderRef:orderRefs) {
-//			cancelOrder(orderRef);
-//		}
-//	}
-//
-//	// 批量撤所有单
-//	public void cancelAllOrders() {
-//		// 先获取所有未成交订单
-//		var orderRefs = orderTracker.allOrderKeys();
-//		for (String orderRef:orderRefs) {
-//			cancelOrder(orderRef);
-//		}
-//	}
-
 	// 撤单
 	private OrderReq cancelOrder(CThostFtdcInputOrderActionField order) {
 		var r = new OrderReq(reqIDAtom.getAndIncrement(), order.getOrderRef());
@@ -414,21 +292,6 @@ public class TraderCall implements ITrader{
 		action.setActionFlag(jctpConstants.THOST_FTDC_AF_Delete);
 		return action;
 	}
-
-//	// 生成查询行情的对象
-//	public CThostFtdcQryDepthMarketDataField genQryDepthMarketData(String instrumentID) {
-//		var qry = new CThostFtdcQryDepthMarketDataField();
-//		qry.setInstrumentID(instrumentID);
-//		return qry;
-//	}
-//
-//	// 查询行情
-//	public TraderReq queryDepthMarketData(String instrumentID) {
-//		var qry = genQryDepthMarketData(instrumentID);
-//		var r = genReq();
-//		r.resultCode = traderApi.ReqQryDepthMarketData(qry, r.requestID);
-//		return r;
-//	}
 
 	// 生成request
 	private TraderReq genReq() {

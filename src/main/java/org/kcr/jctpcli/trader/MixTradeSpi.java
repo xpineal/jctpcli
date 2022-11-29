@@ -209,12 +209,10 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 
 		// 被动撤单和主动撤单都会返回此状态
 		if (pOrder.getOrderStatus() == jctpConstants.THOST_FTDC_OST_Canceled) {
+			// TODO 后续可以做一个序号跟踪保证可重入
+			// pOrder.getSequenceNo()
 			hold.lock();
-			var r = hold.orderTracker.OnOrderCancelled(pOrder.getOrderRef());
-			if (r != null) {
-				// 撤单成功 -- 把可用金额加回去
-				hold.available += r.orderCancelCost(hold.instrument);
-			}
+			hold.OnOrderCancelled(pOrder.getOrderRef());
 			hold.unlock();
 		}
 
@@ -230,20 +228,11 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			System.out.println("成交通知信息回包为空");
 			return;
 		}
+		// TODO 后续可以做一个序号跟踪保证可重入
+		// pTrade.getSequenceNo()
 		// 成交回包
 		hold.lock();
-		var r = hold.orderTracker.OnOrderTrade(pTrade.getOrderRef(), pTrade.getVolume(), pTrade.getPrice());
-		if (r != null) {
-			hold.instrument.OnOrderTrade(r);
-			if (r.orderItem.direction == Direction.CloseBuy) {
-				// 平多后回款
-				hold.available += hold.instrument.buyMargin(r.orderItem.price, r.orderItem.volume);
-			}
-			if (r.orderItem.direction == Direction.CloseSell) {
-				// 平空后回款
-				hold.available += hold.instrument.sellMargin(r.orderItem.price, r.orderItem.volume);
-			}
-		}
+		hold.OnOrderTrade(pTrade.getOrderRef(), pTrade.getVolume(), pTrade.getPrice());
 		hold.unlock();
 		if (Parameter.debugMode) {
 			Output.pTrade("成交通知", pTrade);
@@ -343,26 +332,6 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			Output.pInstrument("请求查询合约响应", pInstrument);
 		}
 	}
-
-//	// 保证金率或保证金
-//	@Override
-//	public void OnRspQryInstrumentMarginRate(CThostFtdcInstrumentMarginRateField pInstrumentMarginRate,
-//			CThostFtdcRspInfoField pRspInfo, int nRequestID, boolean bIsLast) {
-//		if (Output.pResponse("保证金率或保证金", pRspInfo, nRequestID, bIsLast)) {
-//			return;
-//		}
-//		if (pInstrumentMarginRate == null) {
-//			System.out.println("保证金率或保证金返回信息为空");
-//			return;
-//		}
-//		// 查询保证金率及费
-//		// env.bInstrumentMarginRate = true;
-//
-//		if (Prameter.debugMode) {
-//			Output.pInstrumentMarginRate("保证金率或保证金", pInstrumentMarginRate);
-//		}
-//
-//	}
 
 	// 请求查询合约手续费率响应
 	@Override

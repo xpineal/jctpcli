@@ -35,12 +35,12 @@ public class OrderTracker {
     }
 
     // 处理订单成交回包
-    public OrderInfo OnOrderTrade(String orderRef, int volume, double price) {
+    public OrderInfo OnOrderTrade(String orderRef, int volume) {
         var existOrder = orderTrackHash.get(orderRef);
         if (existOrder == null) {
             return null;
         }
-        var r = new OrderInfo(orderRef, volume, price, existOrder.direction);
+        var r = new OrderInfo(orderRef, volume, existOrder.price, existOrder.direction);
         existOrder.volume -= volume;
         if (existOrder.volume == 0) {
             orderTrackHash.remove(orderRef);
@@ -79,6 +79,20 @@ public class OrderTracker {
             a.add(new OrderInfo(key, value));
         });
         return a;
+    }
+
+    public String allOrdersToString() {
+        var sb = new StringBuffer(512);
+        sb.append("[\n");
+        orderTrackHash.forEach((key, value)->{
+            sb.append("order ref:").append(key).append(",");
+            sb.append("direction:").append(value.direction).append(",");
+            sb.append("price:").append(value.volume).append(",");
+            sb.append("state:").append(value.price).append(",");
+            sb.append("direction:").append(value.state).append("\n");
+        });
+        sb.append("]");
+        return sb.toString();
     }
 
     // 获取所有没有成交的订单单号

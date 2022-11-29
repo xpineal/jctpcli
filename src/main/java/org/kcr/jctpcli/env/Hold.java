@@ -30,7 +30,8 @@ public class Hold {
     }
 
     public boolean canOpenBuy(Instrument instrument, double price, int volume) {
-        return available >= instrument.openBuyCost(price, volume);
+        var cost = instrument.openBuyCost(price, volume);
+        return available >= cost;
     }
 
     public boolean canOpenSell(Instrument instrument, double price, int volume) {
@@ -53,5 +54,44 @@ public class Hold {
         }
         // 检查手续费
         return available >= instrument.closeFee(volume);
+    }
+
+    public boolean OnOrderTrade(String orderRef, int volume, double price) {
+        var r = orderTracker.OnOrderTrade(orderRef, volume);
+        var existPrice = r.orderItem.price;
+        if (r != null) {
+            r.orderItem.price = price;
+            instrument.OnOrderTrade(r);
+            switch (r.orderItem.direction){
+                case OpenBuy:
+                    // 做多后可能会有盈余回款
+                    available += instrument.buyMargin(existPrice-price, volume);
+                    break;
+                case OpenSell:
+                    // 做空后可能会有盈余回款
+                    available += instrument.sellMargin(price-existPrice, volume);
+                    break;
+                case CloseBuy:
+                    // 平多后回款
+                    available += instrument.buyMargin(r.orderItem.price, r.orderItem.volume);
+                    break;
+                case CloseSell:
+                    // 平空后回款
+                    available += instrument.sellMargin(r.orderItem.price, r.orderItem.volume);
+                    break;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    public boolean OnOrderCancelled(String orderRef) {
+        var r = orderTracker.OnOrderCancelled(orderRef);
+        if (r != null) {
+            // 撤单成功 -- 把可用金额加回去
+            available += r.orderCancelCost(instrument);
+            return true;
+        }
+        return false;
     }
 }
