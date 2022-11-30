@@ -119,6 +119,21 @@ public class Instrument {
         return price * volumeMultiple * shortMarginRatio*volume;
     }
 
+    // 开仓手续费
+    public double openFee(int volume) {
+        return openRatioByVolume * volume;
+    }
+
+    // 平摊的开多手续费
+    public double openBuySplitFee(int volume) {
+        return (openRatioByVolume*volume)/(volumeMultiple * longMarginRatio);
+    }
+
+    // 平摊的开空手续费
+    public double openSellSplitFee(int volume) {
+        return (openRatioByVolume*volume)/(volumeMultiple * shortMarginRatio);
+    }
+
     // 开多费用(保证金和手续费)
     public double openBuyCost(double price, int volume) {
         return buyMargin(price, volume) + openRatioByVolume * volume;
@@ -129,9 +144,14 @@ public class Instrument {
         return sellMargin(price, volume) + openRatioByVolume * volume;
     }
 
-    // 开仓手续费
-    public double openFee(int volume) {
-        return volume * openRatioByVolume;
+    // 多仓获利后的平摊
+    public double buyProfileSplit(double profile) {
+        return profile/(volumeMultiple * longMarginRatio);
+    }
+
+    // 空仓获利后的平摊
+    public double sellProfileSplit(double profile) {
+        return profile/(volumeMultiple * shortMarginRatio);
     }
 
     // 平仓手续费
@@ -166,10 +186,10 @@ public class Instrument {
 
     // 开多
     private void OnOpenBuy(OrderInfo order) {
-        var of = openFee(order.orderItem.volume);
+        var of = openBuySplitFee(order.orderItem.volume);
         var total = buyPrice*buyVol + of + order.total();
         buyVol += order.orderItem.volume;
-        openBuyFee += of;
+        openBuyFee += openFee(order.orderItem.volume);
 
         if (buyVol > 0) {
             buyPrice = total/buyVol;
@@ -180,10 +200,11 @@ public class Instrument {
 
     // 开空
     private void OnOpenSell(OrderInfo order) {
-        var of = openFee(order.orderItem.volume);
+        var of = openSellSplitFee(order.orderItem.volume);
         var total = sellPrice*sellVol - of + order.total();
         sellVol += order.orderItem.volume;
-        openSellFee += of;
+        openSellFee += openFee(order.orderItem.volume);
+
         if (sellVol > 0) {
             sellPrice = total/sellVol;
         }else {
@@ -195,14 +216,13 @@ public class Instrument {
     private double OnCloseBuy(OrderInfo order) {
         if (order.orderItem.volume > buyVol) {
             System.out.printf("错误的平多订单信息:%s\n", order.ToString());
-//            buyVol = 0;
-//            buyPrice = 0;
             return 0;
         }
         // 计算获利
         // 利润 = 平多价格*平多数量(order.total()) - 买多均价*平多数量 - 手续费
         var cf = closeFee(order.orderItem.volume);
-        var benefit = order.total() - buyPrice*order.orderItem.volume - cf;
+        var marginProfile = order.total() - buyPrice*order.orderItem.volume;
+        var benefit = buyMargin(marginProfile, 1) - cf;
         closeBuyFee += cf;
         if (order.orderItem.volume == buyVol) {
             // 全平
@@ -216,7 +236,7 @@ public class Instrument {
         buyVol -= order.orderItem.volume;
         // 当前均价 = 当前持仓成本/当前持仓数量
         // 当前持仓成本 = 剩余数量*平仓前均价 - 利润
-        buyPrice = (buyVol * buyPrice-benefit)/buyVol;
+        buyPrice = (buyVol * buyPrice- buyProfileSplit(benefit))/buyVol;
         return benefit;
     }
 
@@ -224,14 +244,13 @@ public class Instrument {
     private double OnCloseSell(OrderInfo order) {
         if (order.orderItem.volume > sellVol) {
             System.out.printf("错误的平空订单信息:%s\n", order.ToString());
-//            sellVol = 0;
-//            sellPrice = 0;
             return 0;
         }
         // 计算获利，平空只有在价格下跌时才有利润，其利润正好和平多相反
         // 利润 = 买空均价*平空数量 - 平空价格*平空数量(order.total()) - 手续费
         var cf = closeFee(order.orderItem.volume);
-        var benefit = (sellPrice*order.orderItem.volume) -order.total() - cf;
+        var marginProfile = sellPrice*order.orderItem.volume - order.total();
+        var benefit = sellMargin(marginProfile, 1) - cf;
         closeSellFee += cf;
         if (order.orderItem.volume == sellVol) {
             // 全平
@@ -246,7 +265,7 @@ public class Instrument {
         // 空头势能越高越有利，做空时点位高则势能高
         // 当前均价 = 当前空头势能/当前持仓数量
         // 当前空头势能 = 剩余数量*平仓前均价 + 利润
-        sellPrice = (sellVol * sellPrice+benefit)/sellVol;
+        sellPrice = (sellVol * sellPrice+sellProfileSplit(benefit))/sellVol;
         return benefit;
     }
 
