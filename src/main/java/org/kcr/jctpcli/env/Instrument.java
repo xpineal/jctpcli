@@ -37,24 +37,26 @@ public class Instrument {
     // 多头持仓和价格
     public int buyVol = 0;
     public double buyPrice = 0;
+    public double actBuyPrice = 0;
+    public double marginBuyPrice = 0;
+    // 多单利润
+    public double buyProfile = 0;
+    // 开多手续费总和
+    public double openBuyTotalFee = 0;
+    // 平多手续费总和
+    public double closeBuyTotalFee = 0;
 
     // 空头持仓和价格
     public int sellVol = 0;
     public double sellPrice = 0;
-
-    // 多单利润
-    public double buyProfile = 0;
+    public double actSellPrice = 0;
+    public double marginSellPrice = 0;
     // 空单利润
     public double sellProfile = 0;
-
-    // 开多手续费
-    public double openBuyFee = 0;
-    // 开空手续费
-    public double openSellFee = 0;
-    // 平多手续费
-    public double closeBuyFee = 0;
+    // 开空手续费总和
+    public double openSellTotalFee = 0;
     // 平空手续费
-    public double closeSellFee = 0;
+    public double closeSellTotalFee = 0;
 
     public Instrument(String _exchangeID, String _instrumentID) {
         exchangeID = _exchangeID;
@@ -69,16 +71,23 @@ public class Instrument {
 
     public String holdInfo() {
         var sb = new StringBuffer(512);
-        sb.append("buy volume:").append(buyVol).append(",");
-        sb.append("buy price:").append(buyPrice).append(",");
-        sb.append("sell volume:").append(sellVol).append(",");
-        sb.append("sell price:").append(sellPrice).append(",");
-        sb.append("buy profile:").append(buyProfile).append(",");
-        sb.append("sell profile:").append(sellProfile).append(",");
-        sb.append("open buy fee:").append(openBuyFee).append(",");
-        sb.append("open sell fee:").append(openSellFee).append(",");
-        sb.append("close buy fee:").append(closeBuyFee).append(",");
-        sb.append("close sell fee:").append(closeSellFee);
+        sb.append("多 -- ");
+        sb.append("数量:").append(buyVol).append(",");
+        sb.append("价格:").append(buyPrice).append(",");
+        sb.append("实际价格:").append(actBuyPrice).append(",");
+        sb.append("保证金价格:").append(marginBuyPrice).append(",");
+        sb.append("利润:").append(buyProfile).append(",");
+        sb.append("开手续费:").append(openBuyTotalFee).append(",");
+        sb.append("平手续费:").append(closeBuyTotalFee).append("\n");
+
+        sb.append("空 -- ");
+        sb.append("数量:").append(sellVol).append(",");
+        sb.append("价格:").append(sellPrice).append(",");
+        sb.append("实际价格:").append(actSellPrice).append(",");
+        sb.append("保证金价格:").append(marginSellPrice).append(",");
+        sb.append("利润:").append(sellProfile).append(",");
+        sb.append("开手续费:").append(openSellTotalFee).append(",");
+        sb.append("平手续费:").append(closeSellTotalFee).append("\n");
         return sb.toString();
     }
 
@@ -119,19 +128,19 @@ public class Instrument {
         return price * volumeMultiple * shortMarginRatio*volume;
     }
 
+    // 利润
+    public double profile(double priceDelta, int volume) {
+        return priceDelta * volumeMultiple * volume;
+    }
+
+    // 开仓手续费转化成价格
+    public double openFeePrice(int volume) {
+        return (openRatioByVolume*volume) / volumeMultiple;
+    }
+
     // 开仓手续费
     public double openFee(int volume) {
         return openRatioByVolume * volume;
-    }
-
-    // 平摊的开多手续费
-    public double openBuySplitFee(int volume) {
-        return (openRatioByVolume*volume)/(volumeMultiple * longMarginRatio);
-    }
-
-    // 平摊的开空手续费
-    public double openSellSplitFee(int volume) {
-        return (openRatioByVolume*volume)/(volumeMultiple * shortMarginRatio);
     }
 
     // 开多费用(保证金和手续费)
@@ -144,14 +153,9 @@ public class Instrument {
         return sellMargin(price, volume) + openRatioByVolume * volume;
     }
 
-    // 多仓获利后的平摊
-    public double buyProfileSplit(double profile) {
-        return profile/(volumeMultiple * longMarginRatio);
-    }
-
-    // 空仓获利后的平摊
-    public double sellProfileSplit(double profile) {
-        return profile/(volumeMultiple * shortMarginRatio);
+    // 平仓手续费转化成价格
+    public double closeFeePrice(int volume) {
+        return (closeRatioByVolume*volume) / volumeMultiple;
     }
 
     // 平仓手续费
@@ -167,7 +171,7 @@ public class Instrument {
     }
 
     // 处理订单成交回包
-    public void OnOrderTrade(OrderInfo order) {
+    public double OnOrderTrade(OrderInfo order) {
         switch (order.orderItem.direction) {
             case OpenBuy:
                 OnOpenBuy(order);
@@ -176,23 +180,27 @@ public class Instrument {
                 OnOpenSell(order);
                 break;
             case CloseBuy:
-                OnCloseBuy(order);
-                break;
+                return OnCloseBuy(order);
             case CloseSell:
-                OnCloseSell(order);
-                break;
+                return OnCloseSell(order);
         }
+        return 0;
     }
 
     // 开多
     private void OnOpenBuy(OrderInfo order) {
-        var of = openBuySplitFee(order.orderItem.volume);
-        var total = buyPrice*buyVol + of + order.total();
+        var total = buyPrice*buyVol + order.total();
+        // 实际的价格需要考虑手续费
+        var actTotal = actBuyPrice*buyVol + order.total() + openFeePrice(order.orderItem.volume);
+        // 实缴保证金
+        var marginTotal = marginBuyPrice*buyVol + buyMargin(order.orderItem.price, order.orderItem.volume);
         buyVol += order.orderItem.volume;
-        openBuyFee += openFee(order.orderItem.volume);
+        openBuyTotalFee += openFee(order.orderItem.volume);
 
         if (buyVol > 0) {
             buyPrice = total/buyVol;
+            actBuyPrice = actTotal/buyVol;
+            marginBuyPrice = marginTotal/buyVol;
         }else {
             System.out.printf("错误的开多订单信息:%s\n", order.ToString());
         }
@@ -200,73 +208,95 @@ public class Instrument {
 
     // 开空
     private void OnOpenSell(OrderInfo order) {
-        var of = openSellSplitFee(order.orderItem.volume);
-        var total = sellPrice*sellVol - of + order.total();
+        var total = sellPrice*sellVol + order.total();
+        // 实际的价格需要考虑手续费
+        var actTotal = actSellPrice*sellVol + order.total() - openFeePrice(order.orderItem.volume);
+        // 实缴保证金
+        var marginTotal = marginSellPrice*sellVol + sellMargin(order.orderItem.price, order.orderItem.volume);
         sellVol += order.orderItem.volume;
-        openSellFee += openFee(order.orderItem.volume);
+        openSellTotalFee += openFee(order.orderItem.volume);
 
         if (sellVol > 0) {
             sellPrice = total/sellVol;
+            actSellPrice = actTotal/sellVol;
+            marginSellPrice = marginTotal/sellVol;
         }else {
             System.out.printf("错误的开空订单信息:%s\n", order.ToString());
         }
     }
 
-    // 平多
+    // 平多 -- 返回可用资金增量
+    // 部分平只返回对应的保证金
+    // 全平返回对应保证金+利润
     private double OnCloseBuy(OrderInfo order) {
         if (order.orderItem.volume > buyVol) {
             System.out.printf("错误的平多订单信息:%s\n", order.ToString());
             return 0;
         }
-        // 计算获利
-        // 利润 = 平多价格*平多数量(order.total()) - 买多均价*平多数量 - 手续费
         var cf = closeFee(order.orderItem.volume);
-        var marginProfile = order.total() - buyPrice*order.orderItem.volume;
-        var benefit = buyMargin(marginProfile, 1) - cf;
-        closeBuyFee += cf;
+        closeBuyTotalFee += cf;
+        // 计算系统返还的保证金
+        var retMargin = marginBuyPrice*order.orderItem.volume;
+
         if (order.orderItem.volume == buyVol) {
             // 全平
+            // 全平时才计入利润
+            // 计算利润
+            var benefit = profile(order.orderItem.price-actBuyPrice, order.orderItem.volume) - cf;
+            buyProfile += benefit;
             buyVol = 0;
             buyPrice = 0;
-            // 全平清仓才计算利润
-            buyProfile += benefit;
-            return benefit;
+            actBuyPrice = 0;
+            marginBuyPrice = 0;
+            // 返回可用资金增量 = 返还的保证金+利润+开平手续费(利润部分已经扣除了开平手续费，这里需要加回来)
+            return retMargin + benefit + cf + openFee(order.orderItem.volume);
         }
 
+        var orderTotal = order.total();
+        var total = (buyPrice*buyVol - orderTotal);
+        // 实际的价格需要考虑手续费
+        var actTotal = (actBuyPrice*buyVol - orderTotal + closeFeePrice(order.orderItem.volume));
         buyVol -= order.orderItem.volume;
-        // 当前均价 = 当前持仓成本/当前持仓数量
-        // 当前持仓成本 = 剩余数量*平仓前均价 - 利润
-        buyPrice = (buyVol * buyPrice- buyProfileSplit(benefit))/buyVol;
-        return benefit;
+        buyPrice = total/buyVol;
+        actBuyPrice = actTotal/buyVol;
+        // 返回可用资金增量 = 返还的保证金+开平手续费(手续费计入到价格中了，这里需要加回来)
+        return retMargin + cf + openFee(order.orderItem.volume);
     }
 
-    // 平空
+    // 平空 -- 返回可用资金增量(包括返还的保证金+利润+开平手续费)
     private double OnCloseSell(OrderInfo order) {
         if (order.orderItem.volume > sellVol) {
             System.out.printf("错误的平空订单信息:%s\n", order.ToString());
             return 0;
         }
-        // 计算获利，平空只有在价格下跌时才有利润，其利润正好和平多相反
-        // 利润 = 买空均价*平空数量 - 平空价格*平空数量(order.total()) - 手续费
         var cf = closeFee(order.orderItem.volume);
-        var marginProfile = sellPrice*order.orderItem.volume - order.total();
-        var benefit = sellMargin(marginProfile, 1) - cf;
-        closeSellFee += cf;
+        closeSellTotalFee += cf;
+        // 计算系统返还的保证金
+        var retMargin = marginSellPrice*order.orderItem.volume;
+
         if (order.orderItem.volume == sellVol) {
             // 全平
+            // 全平时才计入利润
+            // 计算利润
+            var benefit = profile(actSellPrice-order.orderItem.price, order.orderItem.volume) - cf;
+            sellProfile += benefit;
             sellVol = 0;
             sellPrice = 0;
-            // 全平清仓才计算利润
-            sellProfile += benefit;
-            return benefit;
+            actSellPrice = 0;
+            marginSellPrice = 0;
+            // 返回可用资金增量 = 返还的保证金+利润+开平手续费(利润部分已经扣除了开平手续费，这里需要加回来)
+            return retMargin + benefit + cf + openFee(order.orderItem.volume);
         }
 
+        var orderTotal = order.total();
+        var total = (sellPrice*sellPrice - orderTotal);
+        // 实际的价格需要考虑手续费
+        var actTotal = (actSellPrice*sellVol - orderTotal - closeFeePrice(order.orderItem.volume));
         sellVol -= order.orderItem.volume;
-        // 空头势能越高越有利，做空时点位高则势能高
-        // 当前均价 = 当前空头势能/当前持仓数量
-        // 当前空头势能 = 剩余数量*平仓前均价 + 利润
-        sellPrice = (sellVol * sellPrice+sellProfileSplit(benefit))/sellVol;
-        return benefit;
+        sellPrice = total/sellVol;
+        actSellPrice = actTotal/sellVol;
+        // 返回可用资金增量 = 返还的保证金+开平手续费(手续费计入到价格中了，这里需要加回来)
+        return retMargin + cf + openFee(order.orderItem.volume);
     }
 
 }

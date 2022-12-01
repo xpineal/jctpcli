@@ -61,23 +61,20 @@ public class Hold {
         var existPrice = r.orderItem.price;
         if (r != null) {
             r.orderItem.price = price;
-            instrument.OnOrderTrade(r);
+            var retAvailable = instrument.OnOrderTrade(r);
             switch (r.orderItem.direction){
                 case OpenBuy:
-                    // 做多后可能会有盈余回款
+                    // 做多后可能会有回款
                     available += instrument.buyMargin(existPrice-price, volume);
                     break;
                 case OpenSell:
-                    // 做空后可能会有盈余回款
-                    available += instrument.sellMargin(price-existPrice, volume);
+                    // 做空后可能会有补款
+                    available += instrument.sellMargin(existPrice-price, volume);
                     break;
                 case CloseBuy:
-                    // 平多后回款
-                    available += instrument.buyMargin(r.orderItem.price, r.orderItem.volume);
-                    break;
                 case CloseSell:
-                    // 平空后回款
-                    available += instrument.sellMargin(r.orderItem.price, r.orderItem.volume);
+                    // 平后回款
+                    available += retAvailable;
                     break;
             }
             return true;

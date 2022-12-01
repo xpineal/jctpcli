@@ -107,7 +107,7 @@ class BrokerTest {
 
     @Test
     void executeOpenSell4() {
-        printExeRet(broker.executeOpenBuy(100, 2));
+        printExeRet(broker.executeOpenSell(100, 2));
         printHold("open sell", broker.hold);
         broker.hold.OnOrderTrade("1", 1, 110);
         printHold("done sell1", broker.hold);
@@ -117,7 +117,7 @@ class BrokerTest {
 
     @Test
     void executeOpenSell5() {
-        printExeRet(broker.executeOpenBuy(100, 2));
+        printExeRet(broker.executeOpenSell(100, 2));
         printHold("open sell", broker.hold);
         broker.hold.OnOrderTrade("1", 1, 110);
         printHold("done sell1", broker.hold);
@@ -128,33 +128,90 @@ class BrokerTest {
     @Test
     void executeCloseBuy1() {
         printExeRet(broker.executeOpenBuy(100, 1));
-        printHold("open buy", broker.hold);
+        //printHold("open buy", broker.hold);
         broker.hold.OnOrderTrade("1", 1, 100);
         printHold("done buy", broker.hold);
 
         printExeRet(broker.executeCloseBuy(110, 1));
-        printHold("close buy", broker.hold);
+        //printHold("close buy", broker.hold);
         broker.hold.OnOrderTrade("2", 1, 110);
+        printHold("done close", broker.hold);
+    }
+
+    @Test
+    void executeCloseBuy11() {
+        printExeRet(broker.executeOpenBuy(100, 1));
+       //printHold("open buy", broker.hold);
+        broker.hold.OnOrderTrade("1", 1, 100);
+        printHold("done buy", broker.hold);
+
+        printExeRet(broker.executeCloseBuy(90, 1));
+        printHold("close buy", broker.hold);
+        broker.hold.OnOrderTrade("2", 1, 90);
+        printHold("done close", broker.hold);
+    }
+
+    @Test
+    void executeCloseBuy13() {
+        printExeRet(broker.executeOpenBuy(100, 1));
+        //printHold("open buy", broker.hold);
+        broker.hold.OnOrderTrade("1", 1, 100);
+        printHold("done buy", broker.hold);
+
+        printExeRet(broker.executeCloseBuy(90, 1));
+        printHold("close buy", broker.hold);
+        broker.hold.OnOrderTrade("2", 1, 100);
         printHold("done close", broker.hold);
     }
 
     @Test
     void executeCloseBuy2() {
         printExeRet(broker.executeOpenBuy(100, 2));
-        printHold("open buy", broker.hold);
         broker.hold.OnOrderTrade("1", 1, 90);
         printHold("done buy1", broker.hold);
         broker.hold.OnOrderTrade("1", 1, 80);
         printHold("done buy2", broker.hold);
 
         printExeRet(broker.executeCloseBuy(110, 1));
-        printHold("close buy1", broker.hold);
-        broker.hold.OnOrderTrade("2", 1, 110);
+        broker.hold.OnOrderTrade("2", 1, 100);
         printHold("done close buy1", broker.hold);
 
         printExeRet(broker.executeCloseBuy(110, 1));
-        printHold("close buy2", broker.hold);
-        broker.hold.OnOrderTrade("3", 1, 120);
+        broker.hold.OnOrderTrade("3", 1, 110);
+        printHold("done close buy2", broker.hold);
+    }
+
+    @Test
+    void executeCloseBuy21() {
+        printExeRet(broker.executeOpenBuy(100, 2));
+        broker.hold.OnOrderTrade("1", 1, 90);
+        printHold("done buy1", broker.hold);
+        broker.hold.OnOrderTrade("1", 1, 80);
+        printHold("done buy2", broker.hold);
+
+        printExeRet(broker.executeCloseBuy(110, 1));
+        broker.hold.OnOrderTrade("2", 1, 70);
+        printHold("done close buy1", broker.hold);
+
+        printExeRet(broker.executeCloseBuy(110, 1));
+        broker.hold.OnOrderTrade("3", 1, 60);
+        printHold("done close buy2", broker.hold);
+    }
+
+    @Test
+    void executeCloseBuy221() {
+        printExeRet(broker.executeOpenBuy(100, 2));
+        broker.hold.OnOrderTrade("1", 1, 90);
+        printHold("done buy1", broker.hold);
+        broker.hold.OnOrderTrade("1", 1, 80);
+        printHold("done buy2", broker.hold);
+
+        printExeRet(broker.executeCloseBuy(110, 1));
+        broker.hold.OnOrderTrade("2", 1, 90);
+        printHold("done close buy1", broker.hold);
+
+        printExeRet(broker.executeCloseBuy(110, 1));
+        broker.hold.OnOrderTrade("3", 1, 80);
         printHold("done close buy2", broker.hold);
     }
 
@@ -169,6 +226,49 @@ class BrokerTest {
         printHold("close sell", broker.hold);
         broker.hold.OnOrderTrade("2", 1, 90);
         printHold("done close sell", broker.hold);
+    }
+
+    @Test
+    void executeCloseSell12() {
+        printExeRet(broker.executeOpenSell(100, 1));
+        printHold("open sell", broker.hold);
+        broker.hold.OnOrderTrade("1", 1, 100);
+        printHold("done sell", broker.hold);
+
+        printExeRet(broker.executeCloseSell(120, 1));
+        printHold("close sell", broker.hold);
+        broker.hold.OnOrderTrade("2", 1, 110);
+        printHold("done close sell", broker.hold);
+    }
+
+    @Test
+    void executeCloseSell13() {
+        printExeRet(broker.executeOpenSell(100, 1));
+        printHold("open sell", broker.hold);
+        broker.hold.OnOrderTrade("1", 1, 100);
+        printHold("done sell", broker.hold);
+
+        printExeRet(broker.executeCloseSell(120, 1));
+        printHold("close sell", broker.hold);
+        broker.hold.OnOrderTrade("2", 1, 100);
+        printHold("done close sell", broker.hold);
+    }
+
+    @Test
+    void executeCloseSell2() {
+        printExeRet(broker.executeOpenSell(100, 2));
+        broker.hold.OnOrderTrade("1", 1, 90);
+        printHold("done sell1", broker.hold);
+        broker.hold.OnOrderTrade("1", 1, 80);
+        printHold("done sell2", broker.hold);
+
+        printExeRet(broker.executeCloseSell(90, 1));
+        broker.hold.OnOrderTrade("2", 1, 80);
+        printHold("done close sell1", broker.hold);
+
+        printExeRet(broker.executeCloseSell(80, 1));
+        broker.hold.OnOrderTrade("3", 1, 90);
+        printHold("done close sell2", broker.hold);
     }
 
     @Test
