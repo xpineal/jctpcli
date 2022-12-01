@@ -225,9 +225,8 @@ public class Instrument {
         }
     }
 
-    // 平多 -- 返回可用资金增量
-    // 部分平只返回对应的保证金
-    // 全平返回对应保证金+利润
+    // 平多 -- 返回可用资金增量(包括返还的保证金+利润+开平手续费)
+    // 返回对应保证金+利润
     private double OnCloseBuy(OrderInfo order) {
         if (order.orderItem.volume > buyVol) {
             System.out.printf("错误的平多订单信息:%s\n", order.ToString());
@@ -237,30 +236,12 @@ public class Instrument {
         closeBuyTotalFee += cf;
         // 计算系统返还的保证金
         var retMargin = marginBuyPrice*order.orderItem.volume;
-
-        if (order.orderItem.volume == buyVol) {
-            // 全平
-            // 全平时才计入利润
-            // 计算利润
-            var benefit = profile(order.orderItem.price-actBuyPrice, order.orderItem.volume) - cf;
-            buyProfile += benefit;
-            buyVol = 0;
-            buyPrice = 0;
-            actBuyPrice = 0;
-            marginBuyPrice = 0;
-            // 返回可用资金增量 = 返还的保证金+利润+开平手续费(利润部分已经扣除了开平手续费，这里需要加回来)
-            return retMargin + benefit + cf + openFee(order.orderItem.volume);
-        }
-
-        var orderTotal = order.total();
-        var total = (buyPrice*buyVol - orderTotal);
-        // 实际的价格需要考虑手续费
-        var actTotal = (actBuyPrice*buyVol - orderTotal + closeFeePrice(order.orderItem.volume));
+        // 计算利润
+        var benefit = profile(order.orderItem.price-actBuyPrice, order.orderItem.volume) - cf;
+        buyProfile += benefit;
         buyVol -= order.orderItem.volume;
-        buyPrice = total/buyVol;
-        actBuyPrice = actTotal/buyVol;
         // 返回可用资金增量 = 返还的保证金+开平手续费(手续费计入到价格中了，这里需要加回来)
-        return retMargin + cf + openFee(order.orderItem.volume);
+        return retMargin + benefit + cf + openFee(order.orderItem.volume);
     }
 
     // 平空 -- 返回可用资金增量(包括返还的保证金+利润+开平手续费)
@@ -273,30 +254,12 @@ public class Instrument {
         closeSellTotalFee += cf;
         // 计算系统返还的保证金
         var retMargin = marginSellPrice*order.orderItem.volume;
-
-        if (order.orderItem.volume == sellVol) {
-            // 全平
-            // 全平时才计入利润
-            // 计算利润
-            var benefit = profile(actSellPrice-order.orderItem.price, order.orderItem.volume) - cf;
-            sellProfile += benefit;
-            sellVol = 0;
-            sellPrice = 0;
-            actSellPrice = 0;
-            marginSellPrice = 0;
-            // 返回可用资金增量 = 返还的保证金+利润+开平手续费(利润部分已经扣除了开平手续费，这里需要加回来)
-            return retMargin + benefit + cf + openFee(order.orderItem.volume);
-        }
-
-        var orderTotal = order.total();
-        var total = (sellPrice*sellPrice - orderTotal);
-        // 实际的价格需要考虑手续费
-        var actTotal = (actSellPrice*sellVol - orderTotal - closeFeePrice(order.orderItem.volume));
+        // 计算利润
+        var benefit = profile(actSellPrice-order.orderItem.price, order.orderItem.volume) - cf;
+        sellProfile += benefit;
         sellVol -= order.orderItem.volume;
-        sellPrice = total/sellVol;
-        actSellPrice = actTotal/sellVol;
         // 返回可用资金增量 = 返还的保证金+开平手续费(手续费计入到价格中了，这里需要加回来)
-        return retMargin + cf + openFee(order.orderItem.volume);
+        return retMargin + benefit + cf + openFee(order.orderItem.volume);
     }
 
 }
