@@ -7,13 +7,14 @@ import org.kcr.jctpcli.env.ExeRet;
 import org.kcr.jctpcli.env.Hold;
 import org.kcr.jctpcli.env.Instrument;
 import org.kcr.jctpcli.mock.MockTrader;
+import org.kcr.jctpcli.strategy.EmptyStrategy;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class BrokerTest {
 
     public static Hold hold = new Hold("exchangeID", "instrumentID");
-    public static Broker broker = new Broker(new MockTrader(hold.orderTracker), hold);
+    public static Broker broker = new Broker(new MockTrader(hold.orderTracker), new EmptyStrategy(), hold);
 
     @BeforeAll
     static void init() {

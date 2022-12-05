@@ -27,9 +27,29 @@ public class FJson {
 		}
 	}
 
+	public static void resetFile(String fileName) {
+		try {
+			var f = new File(fileName);
+			var rw = new FileWriter(f);
+			rw.write("");
+			rw.close();
+		}catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public static Cnf readCnf(String fileName) {
 		var content = readJsonFile(fileName);
 		var cnf = JSON.parseObject(content, Cnf.class);
 		return cnf;
+	}
+
+	public static Cmd readCmdThenReset(String fileName) {
+		var content = readJsonFile(fileName);
+		if (content == null || content == "") {
+			return new Cmd();
+		}
+		resetFile(fileName);
+		return JSON.parseObject(content, Cmd.class);
 	}
 }

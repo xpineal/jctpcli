@@ -10,7 +10,7 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 	// 初始化标记
 	public Fence fence;
 
-	private TraderCall traderCall;
+	private ITrader traderCall;
 	// 持仓对象
 	private Hold hold;
 

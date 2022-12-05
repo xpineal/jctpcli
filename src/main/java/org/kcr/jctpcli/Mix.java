@@ -3,6 +3,7 @@ package org.kcr.jctpcli;
 import org.kcr.jctpcli.cnf.FJson;
 import org.kcr.jctpcli.env.*;
 import org.kcr.jctpcli.md.MixMdSpi;
+import org.kcr.jctpcli.strategy.ManualStrategy;
 import org.kcr.jctpcli.trader.MixTradeSpi;
 import org.kcr.jctpcli.trader.TraderCall;
 import org.kr.jctp.CThostFtdcMdApi;
@@ -37,7 +38,7 @@ public class Mix {
 				cnf.getBrokerID(), cnf.getAccountID(), cnf.getPassword(), cnf.getAppID(), cnf.getAuthCode());
 
 		// 交易对象
-		var broker = new Broker(traderCall, hold);
+		var broker = new Broker(traderCall,  new ManualStrategy(), hold);
 
 		// 交易环境
 		var tradeSpi = new MixTradeSpi(traderCall, hold);

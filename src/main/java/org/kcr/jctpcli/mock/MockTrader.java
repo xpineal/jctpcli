@@ -3,6 +3,7 @@ package org.kcr.jctpcli.mock;
 import org.kcr.jctpcli.env.Instrument;
 import org.kcr.jctpcli.env.OrderTracker;
 import org.kcr.jctpcli.trader.ITrader;
+import org.kcr.jctpcli.trader.TraderReq;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -48,5 +49,49 @@ public class MockTrader implements ITrader {
     @Override
     public void cancelOrder(String orderRef) {
         orderTracker.OnOrderCancelReq(orderRef);
+    }
+
+    @Override
+    public TraderReq authenticate() {
+        return null;
+    }
+
+    @Override
+    public TraderReq login() {
+        return null;
+    }
+
+    @Override
+    public String getTradingDay() {
+        return "2022-12-05";
+    }
+
+    @Override
+    public TraderReq queryInstrumentCommissionRate(String instrumentID) {
+        return null;
+    }
+
+    @Override
+    public TraderReq queryInvestorPosition(String instrumentID) {
+        return null;
+    }
+
+    @Override
+    public TraderReq queryTradeAccount(String currencyID) {
+        return null;
+    }
+
+    @Override
+    public TraderReq queryInstrument(String instrumentID, String exchangeID) {
+        return null;
+    }
+
+    @Override
+    public void setAtom(int frontID, int sessionID, long orderRef) {
+    }
+
+    @Override
+    public boolean needFence() {
+        return false;
     }
 }

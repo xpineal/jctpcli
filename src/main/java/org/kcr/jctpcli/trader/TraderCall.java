@@ -170,6 +170,11 @@ public class TraderCall implements ITrader{
 		return r;
 	}
 
+	@Override
+	public boolean needFence() {
+		return true;
+	}
+
 	// 生成查询投资者持仓的对象
 	private CThostFtdcQryInvestorPositionField genQryInvestorPosition(String instrumentID) {
 		var qry = new CThostFtdcQryInvestorPositionField();

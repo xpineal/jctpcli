@@ -13,4 +13,25 @@ public interface ITrader {
     public boolean closeSell(Instrument instrument, double price, int volume);
     // 撤单
     public void cancelOrder(String orderRef);
+
+    // 认证
+    TraderReq authenticate();
+
+    // 登录
+    public TraderReq login();
+
+    // 查询当前交易日
+    public String getTradingDay();
+
+    public TraderReq queryInstrumentCommissionRate(String instrumentID);
+
+    public TraderReq queryInvestorPosition(String instrumentID);
+
+    public TraderReq queryTradeAccount(String currencyID);
+
+    public TraderReq queryInstrument(String instrumentID, String exchangeID);
+
+    public void setAtom(int frontID, int sessionID, long orderRef);
+
+    public boolean needFence();
 }

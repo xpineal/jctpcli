@@ -8,11 +8,15 @@ public class Broker {
     // trade caller
     private ITrader traderCall;
 
+    // strategy
+    private IStrategy strategy;
+
     // 包装订单跟踪，持仓情况，资金和合约
     public Hold hold;
 
-    public Broker(ITrader _traderCall, Hold _hold) {
+    public Broker(ITrader _traderCall, IStrategy _strategy, Hold _hold) {
         traderCall = _traderCall;
+        strategy = _strategy;
         hold = _hold;
     }
 
@@ -74,7 +78,7 @@ public class Broker {
     }
 
     public void marketProcess(MarketData md) {
-        var cmd = Strategy.makeDecision(
+        var cmd = strategy.makeDecision(
                 new RunData(hold.instrument, md, hold.orderTracker.allOrders(), hold.available));
 
         if (Parameter.debugMode) {
