@@ -67,6 +67,7 @@ public class MixMdSpi extends CThostFtdcMdSpi {
 		if (Parameter.recordMd) {
 			recorder.writeMD(md.brief());
 		}
+		System.out.println(md.brief());
 		broker.unlock();
 	}
 

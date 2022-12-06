@@ -22,7 +22,7 @@ public class FJson {
 			jsonStr = sb.toString();
 			return jsonStr;
 		} catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 			return null;
 		}
 	}

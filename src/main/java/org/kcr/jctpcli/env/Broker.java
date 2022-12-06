@@ -33,6 +33,7 @@ public class Broker {
     // 执行开多
     public ExeRet executeOpenBuy(double price, int volume) {
         if (hold.canOpenBuy(hold.instrument, price, volume)) {
+        	System.out.printf("open buy ----->  %f   ---- %d \n", price, volume);
             if (traderCall.openBuy(hold.instrument, price, volume)) {
                 hold.available -= hold.instrument.openBuyCost(price, volume);
                 return ExeRet.OK;

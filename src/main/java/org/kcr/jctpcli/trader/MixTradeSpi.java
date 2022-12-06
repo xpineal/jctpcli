@@ -47,11 +47,14 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			return;
 		}
 
-		traderCall.login();
-
-		if (Parameter.debugMode) {
-			Output.pRspAuth("客户端认证响应", pRspAuthenticateField);
+		if (bIsLast) {
+			if (Parameter.debugMode) {
+				Output.pRspAuth("客户端认证响应", pRspAuthenticateField);
+			}
+			System.out.println("start to login --------------");
+			traderCall.login();	
 		}
+		
 	}
 
 	@Override
@@ -68,15 +71,17 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 		// 设置登录后相关的字段
 		setupEnvAfterLogin(pRspUserLogin);
 		// 登录后查询相关数据
-		setupParameterAfterLogin();
-
-		Parameter.tradingDay = traderCall.getTradingDay();
-
-		fence.doneLogin();
-
-		if (Parameter.debugMode) {
-			Output.pLoginInfo("登录请求响应", pRspUserLogin);
-		}
+		// 查询资金账户
+		if (bIsLast) {
+			if (Parameter.debugMode) {
+				Output.pLoginInfo("登录请求响应", pRspUserLogin);
+			}
+			Parameter.tradingDay = traderCall.getTradingDay();
+			fence.doneLogin();
+			System.out.println("start to query account --------------");
+			traderCall.queryTradeAccount("");
+			//setupParameterAfterLogin();	
+		}		
 	}
 
 //	// 投资人信息
@@ -109,12 +114,21 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			System.out.printf("请求查询资金账户响应返回为空:%d-%b\n", nRequestID, bIsLast);
 			return;
 		}
+		
+		// 查询持仓
+		// traderCall.queryInvestorPosition("");
+				
 		// 查询资金账户可用资金
 		hold.available = pTradingAccount.getAvailable();
 		fence.doneAccount();
 
-		if (Parameter.debugMode) {
-			Output.pTradingAccount("请求查询资金账户响应", pTradingAccount);
+		if (bIsLast) {
+			if (Parameter.debugMode) {
+				Output.pTradingAccount("请求查询资金账户响应", pTradingAccount);
+			}
+			System.out.println("start to query instrument --------------");
+			// 查询合约
+			traderCall.queryInstrument(hold.instrument.instrumentID, hold.instrument.exchangeID);			
 		}
 	}
 
@@ -130,8 +144,9 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			return;
 		}
 
+		// 查询合约
+		traderCall.queryInstrument(hold.instrument.instrumentID, hold.instrument.exchangeID);
 		// pInvestorPosition.getPositionDate();// ‘1’ 当日仓 ‘2‘ 历史仓
-
 		if (Parameter.debugMode) {
 			Output.pInvestorPosition("请求查询投资者持仓响应", pInvestorPosition);
 		}
@@ -323,14 +338,31 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			System.out.println("请求查询合约响应返回信息为空");
 			return;
 		}
+		
+		//if (Parameter.debugMode) {
+			//Output.pInstrument("请求查询合约响应", pInstrument);
+		//}
 
-		// 设置保证金率 合约乘数 单位价格
-		hold.instrument.setInstrumentRatio(pInstrument);
-		fence.doneInstrument();
 
-		if (Parameter.debugMode) {
-			Output.pInstrument("请求查询合约响应", pInstrument);
+		if (pInstrument.getOptionsType() == 0) {
+			// 设置保证金率 合约乘数 单位价格
+			hold.instrument.setInstrumentRatio(pInstrument);
+			if (Parameter.debugMode) {
+				Output.pInstrument("请求查询合约响应", pInstrument);
+			}
 		}
+
+		if (bIsLast) {
+			// 查询手续费
+			System.out.println("start to query commission rate --------------");
+			traderCall.queryInstrumentCommissionRate(hold.instrument.instrumentID);	
+			fence.doneInstrument();
+			
+			// 查询手续费及率
+			hold.instrument.setRatio(1);
+			fence.doneCommissionRate();
+		}
+		
 	}
 
 	// 请求查询合约手续费率响应
@@ -374,14 +406,14 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 		// 查询投资人信息
 		// traderCall.queryInvestor();
 		// 查询资金账户
-		traderCall.queryTradeAccount("");
+		// traderCall.queryTradeAccount("");
 		// 查询持仓
-		traderCall.queryInvestorPosition("");
+		// traderCall.queryInvestorPosition("");
 		// 查询合约
-		traderCall.queryInstrument(hold.instrument.instrumentID, hold.instrument.exchangeID);
+		// traderCall.queryInstrument(hold.instrument.instrumentID, hold.instrument.exchangeID);
 		// 查询保证金
 		// traderCall.queryInstrumentMarginRate(Prameter.instrumentID);
 		// 查询手续费
-		traderCall.queryInstrumentCommissionRate(hold.instrument.instrumentID);
+		// traderCall.queryInstrumentCommissionRate(hold.instrument.instrumentID);
 	}
 }

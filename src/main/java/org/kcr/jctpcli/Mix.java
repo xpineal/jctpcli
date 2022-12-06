@@ -14,11 +14,13 @@ public class Mix {
 	public static void main(String[] args) throws InterruptedException {
 		// 输出测试信息
 		if (args.length > 0) {
-			if (args[0].equals("debug")) {
-				Parameter.debugMode = true;
-			}
+//			if (args[0].equals("debug")) {
+//				Parameter.debugMode = true;
+//			}
 		}
 
+		Parameter.debugMode = true;
+		
 		// 读取配置文件
 		var cnf = FJson.readCnf("./cnf.json");
 		cnf.refresh();

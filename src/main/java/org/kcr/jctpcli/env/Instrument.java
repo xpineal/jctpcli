@@ -118,6 +118,11 @@ public class Instrument {
         closeTodayRatioByVolume = tc.getCloseTodayRatioByVolume();
     }
 
+    public void setRatio(double _ratio) {
+    	openRatioByVolume = _ratio;
+    	closeRatioByVolume = _ratio;
+    }
+     
     // 开多平多保证金
     public double buyMargin(double price, int volume) {
         return price * volumeMultiple * longMarginRatio*volume;

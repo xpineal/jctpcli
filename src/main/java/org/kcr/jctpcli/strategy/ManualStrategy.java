@@ -7,7 +7,7 @@ import org.kcr.jctpcli.env.*;
 public class ManualStrategy implements IStrategy {
     public TradeCmd makeDecision(RunData runData) {
         // 读取外部输入
-        var cmd = FJson.readCmdThenReset("/tmp/ctp-trade.json");
+        var cmd = FJson.readCmdThenReset("/home/kky/workspace/ctp-trade.json");
         switch (cmd.mode){
             case Cmd.OpenBuy:
                 return new TradeCmd(OrderItem.MakeOrderItems(1, cmd.price, Direction.OpenBuy), null);

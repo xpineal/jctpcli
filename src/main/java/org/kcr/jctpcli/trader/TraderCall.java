@@ -2,6 +2,7 @@ package org.kcr.jctpcli.trader;
 
 import org.kcr.jctpcli.env.Instrument;
 import org.kcr.jctpcli.env.OrderTracker;
+import org.kcr.jctpcli.util.Output;
 import org.kr.jctp.*;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -65,6 +66,8 @@ public class TraderCall implements ITrader{
 		field.setAppID(appID);
 		var r = genReq();
 		r.resultCode = traderApi.ReqAuthenticate(field, r.requestID);
+		System.out.print("auth resulst:");
+		System.out.println(r.resultCode);
 		return r;
 	}
 
@@ -87,6 +90,7 @@ public class TraderCall implements ITrader{
 	// 开多
 	public boolean openBuy(Instrument instrument, double price, int volume) {
 		CThostFtdcInputOrderField cof = genGFDOrder(instrument, price, volume, true, true);
+		Output.pInputOrder("input order ---->", cof);
 		var r = addOrder(cof);
 		if (r.resultCode == 0) {
 			// 如果返回不是0，表示订单没有发送成功
