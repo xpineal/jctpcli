@@ -1,6 +1,7 @@
 package org.kcr.jctpcli.mock;
 
 import org.kcr.jctpcli.env.Instrument;
+import org.kcr.jctpcli.env.OrderInfo;
 import org.kcr.jctpcli.env.OrderTracker;
 import org.kcr.jctpcli.trader.ITrader;
 import org.kcr.jctpcli.trader.TraderReq;
@@ -21,34 +22,34 @@ public class MockTrader implements ITrader {
     @Override
     public boolean openBuy(Instrument instrument, double price, int volume) {
         var orderRef = Long.toString(orderRefAtom.incrementAndGet());
-        orderTracker.OnOpenBuyReq(orderRef, volume, price);
+        orderTracker.OnOpenBuyReq(orderRef, volume, price, instrument.exchangeID, instrument.instrumentID);
         return true;
     }
 
     @Override
     public boolean closeBuy(Instrument instrument, double price, int volume) {
         var orderRef = Long.toString(orderRefAtom.incrementAndGet());
-        orderTracker.OnCloseBuyReq(orderRef, volume, price);
+        orderTracker.OnCloseBuyReq(orderRef, volume, price, instrument.exchangeID, instrument.instrumentID);
         return true;
     }
 
     @Override
     public boolean openSell(Instrument instrument, double price, int volume) {
         var orderRef = Long.toString(orderRefAtom.incrementAndGet());
-        orderTracker.OnOpenSellReq(orderRef, volume, price);
+        orderTracker.OnOpenSellReq(orderRef, volume, price, instrument.exchangeID, instrument.instrumentID);
         return true;
     }
 
     @Override
     public boolean closeSell(Instrument instrument, double price, int volume) {
         var orderRef = Long.toString(orderRefAtom.incrementAndGet());
-        orderTracker.OnCloseSellReq(orderRef, volume, price);
+        orderTracker.OnCloseSellReq(orderRef, volume, price, instrument.exchangeID, instrument.instrumentID);
         return true;
     }
 
     @Override
-    public void cancelOrder(String orderRef) {
-        orderTracker.OnOrderCancelReq(orderRef);
+    public void cancelOrder(OrderInfo order) {
+        orderTracker.OnOrderCancelReq(order.orderRef);
     }
 
     @Override
@@ -67,7 +68,7 @@ public class MockTrader implements ITrader {
     }
 
     @Override
-    public TraderReq queryInstrumentCommissionRate(String instrumentID) {
+    public TraderReq queryInstrumentCommissionRate(Instrument instrument) {
         return null;
     }
 

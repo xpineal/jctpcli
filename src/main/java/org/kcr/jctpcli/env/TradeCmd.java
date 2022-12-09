@@ -7,9 +7,18 @@ public class TradeCmd {
     ArrayList<OrderItem> exeOrders; //需要做的交易
     ArrayList<OrderInfo> recallOrders; // 需要撤单的订单号列表
 
+    public boolean printInfo;
+
     public TradeCmd(ArrayList<OrderItem> _exeOrders, ArrayList<OrderInfo> _recallOrders) {
         exeOrders = _exeOrders;
         recallOrders = _recallOrders;
+        printInfo = false;
+    }
+
+    public TradeCmd(ArrayList<OrderItem> _exeOrders, ArrayList<OrderInfo> _recallOrders, boolean _printInfo) {
+        exeOrders = _exeOrders;
+        recallOrders = _recallOrders;
+        printInfo = _printInfo;
     }
 
     public String brief() {

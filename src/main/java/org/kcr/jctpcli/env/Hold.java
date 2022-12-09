@@ -58,8 +58,9 @@ public class Hold {
 
     public boolean OnOrderTrade(String orderRef, int volume, double price) {
         var r = orderTracker.OnOrderTrade(orderRef, volume);
-        var existPrice = r.orderItem.price;
+
         if (r != null) {
+            var existPrice = r.orderItem.price;
             r.orderItem.price = price;
             var retAvailable = instrument.OnOrderTrade(r);
             switch (r.orderItem.direction){

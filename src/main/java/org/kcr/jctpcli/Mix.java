@@ -29,6 +29,7 @@ public class Mix {
 			System.out.println("没有相关的合约配置");
 			return;
 		}
+		System.out.println("配置文件读取成功");
 
 		// 交易接口的封装
 		var traderApi = CThostFtdcTraderApi.CreateFtdcTraderApi();
@@ -49,6 +50,7 @@ public class Mix {
 		traderApi.SubscribePublicTopic(THOST_TE_RESUME_TYPE.THOST_TERT_QUICK);
 		traderApi.RegisterFront(cnf.getTradeServer());
 		traderApi.Init();
+		System.out.println("交易环境初始化");
 
 		while (true) {
 			if (tradeSpi.fence.ready()) {
@@ -57,6 +59,7 @@ public class Mix {
 			Thread.sleep(300);
 		}
 
+		System.out.println("交易环境初始化完成");
 		// 打印合约
 		hold.instrument.outPut();
 

@@ -62,12 +62,14 @@ public class MixMdSpi extends CThostFtdcMdSpi {
 	@Override
 	public void OnRtnDepthMarketData(CThostFtdcDepthMarketDataField pDepthMarketData) {
 		var md = new MarketData(pDepthMarketData);
-		broker.lock();
-		broker.marketProcess(md);
+		//System.out.println(md.brief());
+
 		if (Parameter.recordMd) {
 			recorder.writeMD(md.brief());
 		}
-		System.out.println(md.brief());
+
+		broker.lock();
+		broker.marketProcess(md);
 		broker.unlock();
 	}
 

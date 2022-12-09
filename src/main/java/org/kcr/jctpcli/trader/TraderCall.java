@@ -1,6 +1,8 @@
 package org.kcr.jctpcli.trader;
 
 import org.kcr.jctpcli.env.Instrument;
+import org.kcr.jctpcli.env.OrderInfo;
+import org.kcr.jctpcli.env.OrderItem;
 import org.kcr.jctpcli.env.OrderTracker;
 import org.kcr.jctpcli.util.Output;
 import org.kr.jctp.*;
@@ -95,7 +97,7 @@ public class TraderCall implements ITrader{
 		if (r.resultCode == 0) {
 			// 如果返回不是0，表示订单没有发送成功
 			// 添加到追踪hash表中
-			orderTracker.OnOpenBuyReq(r.orderRef, volume, price);
+			orderTracker.OnOpenBuyReq(r.orderRef, volume, price, instrument.exchangeID, instrument.instrumentID);
 			return true;
 		}
 		return false;
@@ -108,7 +110,7 @@ public class TraderCall implements ITrader{
 		if (r.resultCode == 0) {
 			// 如果返回不是0，表示订单没有发送成功
 			// 添加到追踪hash表中
-			orderTracker.OnCloseBuyReq(r.orderRef, volume, price);
+			orderTracker.OnCloseBuyReq(r.orderRef, volume, price, instrument.exchangeID, instrument.instrumentID);
 			return true;
 		}
 		return false;
@@ -121,7 +123,7 @@ public class TraderCall implements ITrader{
 		if (r.resultCode == 0) {
 			// 如果返回不是0，表示订单没有发送成功
 			// 添加到追踪hash表中
-			orderTracker.OnOpenSellReq(r.orderRef, volume, price);
+			orderTracker.OnOpenSellReq(r.orderRef, volume, price, instrument.exchangeID, instrument.instrumentID);
 			return true;
 		}
 		return false;
@@ -134,25 +136,25 @@ public class TraderCall implements ITrader{
 		if (r.resultCode == 0) {
 			// 如果返回不是0，表示订单没有发送成功
 			// 添加到追踪hash表中
-			orderTracker.OnCloseSellReq(r.orderRef, volume, price);
+			orderTracker.OnCloseSellReq(r.orderRef, volume, price, instrument.exchangeID, instrument.instrumentID);
 			return true;
 		}
 		return false;
 	}
 
 	// 撤单
-	public void cancelOrder(String orderRef) {
-		var order = genCancelOrder(orderRef);
-		var r = cancelOrder(order);
+	public void cancelOrder(OrderInfo order) {
+		var o = genCancelOrder(order);
+		var r = cancelOrder(o);
 		if (r.resultCode == 0) {
 			// 如果返回不是0，表示撤单没有发送成功
 			// 更新追踪hash表中
-			orderTracker.OnOrderCancelReq(orderRef);
+			orderTracker.OnOrderCancelReq(order.orderRef);
 		}
 	}
 
-	public TraderReq queryInstrumentCommissionRate(String instrumentID) {
-		var qry = genQryInstrumentCommissionRate(instrumentID);
+	public TraderReq queryInstrumentCommissionRate(Instrument instrument) {
+		var qry = genQryInstrumentCommissionRate(instrument);
 		var r = genReq();
 		r.resultCode = traderApi.ReqQryInstrumentCommissionRate(qry, r.requestID);
 		return r;
@@ -190,11 +192,12 @@ public class TraderCall implements ITrader{
 
 	// 查询合约手续费
 	// ReqQryInstrumentCommissionRate
-	private CThostFtdcQryInstrumentCommissionRateField genQryInstrumentCommissionRate(String instrumentID) {
+	private CThostFtdcQryInstrumentCommissionRateField genQryInstrumentCommissionRate(Instrument instrument) {
 		var qry = new CThostFtdcQryInstrumentCommissionRateField();
 		qry.setBrokerID(brokerID);
 		qry.setInvestorID(investorID);
-		qry.setInstrumentID(instrumentID);
+		qry.setInstrumentID(instrument.instrumentID);
+		qry.setExchangeID(instrument.exchangeID);
 
 		return qry;
 
@@ -230,31 +233,37 @@ public class TraderCall implements ITrader{
 	}
 
 	private CThostFtdcInputOrderField genGFDOrder(
-			Instrument instrument, double price, int vol, boolean bsFlg, boolean isOpen) {
-		return genOrder(instrument, price, vol, bsFlg, isOpen, jctpConstants.THOST_FTDC_TC_GFD);
+			Instrument instrument, double price, int vol, boolean isBuy, boolean isOpen) {
+		return genOrder(instrument, price, vol, isBuy, isOpen, jctpConstants.THOST_FTDC_TC_GFD);
+	}
+
+	private CThostFtdcInputOrderField genFAKOrder(
+			Instrument instrument, double price, int vol, boolean isBuy, boolean isOpen) {
+		return genOrder(instrument, price, vol, isBuy, isOpen, jctpConstants.THOST_FTDC_TC_IOC);
 	}
 
 	// 生成订单的对象
-	// bsFlg ： buy:开多，平空 , sell:开空，平多
+	// isBuy ： buy:开多，平空 , sell:开空，平多
 	/*
 	 * combOffsetFlag :
 	 * HOST_FTDC_OF_Open是开仓，THOST_FTDC_OF_Close是平仓/平昨，THOST_FTDC_OF_CloseToday是平今。
 	 * 除了上期所/能源中心外，不区分平今平昨，平仓统一使用THOST_FTDC_OF_Close。
 	 */
 	private CThostFtdcInputOrderField genOrder(
-			Instrument instrument, double price, int vol, boolean bsFlg, boolean isOpen, char type) {
+			Instrument instrument, double price, int vol, boolean isBuy, boolean isOpen, char type) {
 		var order = new CThostFtdcInputOrderField();
+		//var orderRef = "ref-"+Long.toString(orderRefAtom.incrementAndGet());
 		var orderRef = Long.toString(orderRefAtom.incrementAndGet());
-		order.setBrokerID(brokerID);
-		order.setInvestorID(investorID);
-		order.setInstrumentID(instrument.instrumentID);
+		order.setBrokerID(brokerID); //broker id
+		order.setInvestorID(investorID); //investor id
+		order.setInstrumentID(instrument.instrumentID); //合约id
 		order.setOrderRef(orderRef);
 		// 暂时只使用投机的标记
 		order.setCombHedgeFlag(HFSpeculation);
 		order.setVolumeTotalOriginal(vol);
 		order.setExchangeID(instrument.exchangeID);
 
-		if (bsFlg) {
+		if (isBuy) {
 			order.setDirection(jctpConstants.THOST_FTDC_D_Buy);
 		} else {
 			order.setDirection(jctpConstants.THOST_FTDC_D_Sell);
@@ -275,12 +284,24 @@ public class TraderCall implements ITrader{
 		order.setTimeCondition(type);
 		order.setVolumeCondition(jctpConstants.THOST_FTDC_VC_AV);
 
+		//额外添加的字段
+		order.setAccountID(investorID);
+		order.setClientID(appID);
+		order.setCurrencyID("CNY");
+		order.setForceCloseReason(jctpConstants.THOST_FTDC_FCC_NotForceClose);
+		order.setGTDDate("");
+		order.setIsAutoSuspend(0);
+		order.setIsSwapOrder(0);
+		order.setMinVolume(1);
+		order.setUserID(investorID);
+		order.setUserForceClose(0);
 		return order;
 	}
 
 	// 撤单
 	private OrderReq cancelOrder(CThostFtdcInputOrderActionField order) {
 		var r = new OrderReq(reqIDAtom.getAndIncrement(), order.getOrderRef());
+		order.setOrderActionRef(r.requestID);
 		r.resultCode = traderApi.ReqOrderAction(order, r.requestID);
 		return r;
 	}
@@ -288,14 +309,21 @@ public class TraderCall implements ITrader{
 	// 报单
 	private OrderReq addOrder(CThostFtdcInputOrderField order) {
 		var r = new OrderReq(reqIDAtom.getAndIncrement(), order.getOrderRef());
+		order.setRequestID(r.requestID);
 		r.resultCode = traderApi.ReqOrderInsert(order, r.requestID);
 		return r;
 	}
 
 	// 生成撤单的对象
-	private CThostFtdcInputOrderActionField genCancelOrder(String orderRef) {
+	private CThostFtdcInputOrderActionField genCancelOrder(OrderInfo order) {
 		var action = new CThostFtdcInputOrderActionField();
-		action.setOrderRef(orderRef);
+		action.setBrokerID(brokerID);
+		action.setInvestorID(investorID);
+		action.setExchangeID(order.orderItem.exchangeID);
+		action.setOrderRef(order.orderRef);
+
+		action.setUserID(investorID);
+		action.setInstrumentID(order.orderItem.instrumentID);
 		action.setFrontID(frontIDAtom.get());
 		action.setSessionID(sessionIDAtom.get());
 		action.setActionFlag(jctpConstants.THOST_FTDC_AF_Delete);

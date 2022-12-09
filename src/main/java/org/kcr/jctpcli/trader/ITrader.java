@@ -1,6 +1,7 @@
 package org.kcr.jctpcli.trader;
 
 import org.kcr.jctpcli.env.Instrument;
+import org.kcr.jctpcli.env.OrderInfo;
 
 public interface ITrader {
     // 开多
@@ -12,7 +13,7 @@ public interface ITrader {
     // 平空
     public boolean closeSell(Instrument instrument, double price, int volume);
     // 撤单
-    public void cancelOrder(String orderRef);
+    public void cancelOrder(OrderInfo order);
 
     // 认证
     TraderReq authenticate();
@@ -23,7 +24,7 @@ public interface ITrader {
     // 查询当前交易日
     public String getTradingDay();
 
-    public TraderReq queryInstrumentCommissionRate(String instrumentID);
+    public TraderReq queryInstrumentCommissionRate(Instrument instrument);
 
     public TraderReq queryInvestorPosition(String instrumentID);
 

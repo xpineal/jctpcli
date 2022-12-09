@@ -14,6 +14,8 @@ public class Cmd {
     // 5-撤单
     public static final int Recall = 5;
 
+    // 6-打印持仓和可用资金
+    public static final int Print = 6;
 
     public int mode;
     public double price;

@@ -11,24 +11,32 @@ public class OrderItem {
     public Direction direction; //方向(开多/平多/开空/平空)
     public TradeState state; //交易状态(未成交/部分成交/撤单中/全部成交)
 
+    public String exchangeID;
+    public String instrumentID;
+
     // 如果需要进行tick行情计数，可以在这里添加字段
 
-    public static ArrayList<OrderItem> MakeOrderItems(int volume, double price, Direction direction) {
+    public static ArrayList<OrderItem> MakeOrderItems(
+            int volume, double price, String exchangeID, String instrumentID, Direction direction) {
         var orders = new ArrayList<OrderItem>(1);
-        orders.add(new OrderItem(volume, price, direction));
+        orders.add(new OrderItem(volume, price, exchangeID, instrumentID, direction));
         return orders;
     }
 
-    public OrderItem(int volume, double price) {
+    public OrderItem(int volume, double price, String exchangeID, String instrumentID) {
         this.volume = volume;
         this.price = price;
         this.state = TradeState.NotTrade;
+        this.exchangeID = exchangeID;
+        this.instrumentID = instrumentID;
     }
 
-    public OrderItem(int volume, double price, Direction direction) {
+    public OrderItem(int volume, double price, String exchangeID, String instrumentID, Direction direction) {
         this.volume = volume;
         this.price = price;
         this.direction = direction;
+        this.exchangeID = exchangeID;
+        this.instrumentID = instrumentID;
     }
 
     // 此订单花费

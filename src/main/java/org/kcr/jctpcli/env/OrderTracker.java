@@ -15,23 +15,23 @@ public class OrderTracker {
     }
 
     // 提交开多单后调用以便跟踪订单
-    public void OnOpenBuyReq(String orderRef, int volume, double price) {
-        addOrder(orderRef, volume, price, Direction.OpenBuy);
+    public void OnOpenBuyReq(String orderRef, int volume, double price, String exchangeID, String instrumentID) {
+        addOrder(orderRef, volume, price, exchangeID, instrumentID, Direction.OpenBuy);
     }
 
     // 提交平多单后调用以便跟踪订单
-    public void OnCloseBuyReq(String orderRef, int volume, double price) {
-        addOrder(orderRef, volume, price, Direction.CloseBuy);
+    public void OnCloseBuyReq(String orderRef, int volume, double price, String exchangeID, String instrumentID) {
+        addOrder(orderRef, volume, price, exchangeID, instrumentID, Direction.CloseBuy);
     }
 
     // 提交开空单后调用以便跟踪订单
-    public void OnOpenSellReq(String orderRef, int volume, double price) {
-        addOrder(orderRef, volume, price, Direction.OpenSell);
+    public void OnOpenSellReq(String orderRef, int volume, double price, String exchangeID, String instrumentID) {
+        addOrder(orderRef, volume, price, exchangeID, instrumentID, Direction.OpenSell);
     }
 
     // 提交平多单后调用以便跟踪订单
-    public void OnCloseSellReq(String orderRef, int volume, double price) {
-        addOrder(orderRef, volume, price, Direction.CloseSell);
+    public void OnCloseSellReq(String orderRef, int volume, double price, String exchangeID, String instrumentID) {
+        addOrder(orderRef, volume, price, exchangeID, instrumentID, Direction.CloseSell);
     }
 
     // 处理订单成交回包
@@ -40,7 +40,8 @@ public class OrderTracker {
         if (existOrder == null) {
             return null;
         }
-        var r = new OrderInfo(orderRef, volume, existOrder.price, existOrder.direction);
+        var r = new OrderInfo(orderRef, volume, existOrder.price,
+                existOrder.exchangeID, existOrder.instrumentID, existOrder.direction);
         existOrder.volume -= volume;
         if (existOrder.volume == 0) {
             orderTrackHash.remove(orderRef);
@@ -121,8 +122,9 @@ public class OrderTracker {
         return a;
     }
 
-    private void addOrder(String orderRef, int volume, double price, Direction direct) {
-        var order = new OrderItem(volume, price);
+    private void addOrder(String orderRef, int volume, double price,
+                          String exchangeID, String instrumentID, Direction direct) {
+        var order = new OrderItem(volume, price, exchangeID, instrumentID);
         order.direction = direct;
         orderTrackHash.put(orderRef, order);
     }

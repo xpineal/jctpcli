@@ -1,6 +1,5 @@
 package org.kcr.jctpcli.trader;
 
-import org.kcr.jctpcli.env.Direction;
 import org.kcr.jctpcli.env.Hold;
 import org.kcr.jctpcli.env.Parameter;
 import org.kcr.jctpcli.util.Output;
@@ -355,7 +354,7 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 		if (bIsLast) {
 			// 查询手续费
 			System.out.println("start to query commission rate --------------");
-			traderCall.queryInstrumentCommissionRate(hold.instrument.instrumentID);	
+			traderCall.queryInstrumentCommissionRate(hold.instrument);
 			fence.doneInstrument();
 			
 			// 查询手续费及率

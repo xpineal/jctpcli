@@ -83,17 +83,36 @@ public class Broker {
                 new RunData(hold.instrument, md, hold.orderTracker.allOrders(), hold.available));
 
         if (Parameter.debugMode) {
-            System.out.println("行情信息:");
-            System.out.println(md.brief());
-            System.out.println("决策信息:");
-            System.out.println(cmd.brief());
+//            System.out.println("行情信息:");
+//            if (md == null) {
+//                System.out.println("行情信息为空");
+//            }else{
+//                System.out.println(md.brief());
+//            }
+//
+//            System.out.println("决策信息:");
+//            if (cmd == null) {
+//                System.out.println("决策信息为空");
+//            }else{
+//                System.out.println(cmd.brief());
+//            }
+        }
+
+        if (cmd == null) {
+            System.out.println("决策不应该为空引用");
+        }
+
+        if (cmd.printInfo) {
+            //只做打印
+            System.out.printf("可用资金:%f", hold.available);
+            return;
         }
 
         var recallOrders = cmd.recallOrders;
         if (recallOrders != null) {
             // 撤单
             for (OrderInfo order:recallOrders) {
-                traderCall.cancelOrder(order.orderRef);
+                traderCall.cancelOrder(order);
             }
         }
 
