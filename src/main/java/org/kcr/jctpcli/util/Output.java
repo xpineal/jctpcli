@@ -1,6 +1,6 @@
 package org.kcr.jctpcli.util;
 
-import org.kcr.jctpcli.trader.TraderReq;
+import org.kcr.jctpcli.core.TraderReq;
 import org.kr.jctp.*;
 
 public class Output {

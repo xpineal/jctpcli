@@ -1,4 +1,4 @@
-package org.kcr.jctpcli.trader;
+package org.kcr.jctpcli.core;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

@@ -1,4 +1,4 @@
-package org.kcr.jctpcli.env;
+package org.kcr.jctpcli.core;
 
 import org.kr.jctp.CThostFtdcInstrumentCommissionRateField;
 import org.kr.jctp.CThostFtdcInstrumentField;
@@ -89,6 +89,10 @@ public class Instrument {
         sb.append("开手续费:").append(openSellTotalFee).append(",");
         sb.append("平手续费:").append(closeSellTotalFee).append("\n");
         return sb.toString();
+    }
+
+    private void appendHold(boolean isBuy) {
+
     }
 
     public void setInstrumentRatio(CThostFtdcInstrumentField pInstrument) {

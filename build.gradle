@@ -6,7 +6,7 @@ plugins {
 
 group 'org.kcr.jctpcli'
 version '1.0.0'
-mainClassName = 'org.kcr.jctpcli.Mix'
+mainClassName = 'org.kcr.jctpcli.main.Main'
 sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
 

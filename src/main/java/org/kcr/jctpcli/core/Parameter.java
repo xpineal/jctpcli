@@ -1,4 +1,6 @@
-package org.kcr.jctpcli.env;
+package org.kcr.jctpcli.core;
+
+import org.kcr.jctpcli.cnf.Cnf;
 
 public class Parameter {
     // 交易日
@@ -7,4 +9,10 @@ public class Parameter {
     public static boolean debugMode = false;
     // 记录行情
     public static boolean recordMd = false;
+
+    // 配置
+    public static Cnf cnf;
+
+    // 报单引用前缀
+    public static String orderRefPrefix = "ref";
 }

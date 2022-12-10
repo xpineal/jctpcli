@@ -1,11 +1,11 @@
-package org.kcr.jctpcli.env;
+package org.kcr.jctpcli.core;
 
 import java.util.ArrayList;
 
 // 交易指令
 public class TradeCmd {
-    ArrayList<OrderItem> exeOrders; //需要做的交易
-    ArrayList<OrderInfo> recallOrders; // 需要撤单的订单号列表
+    public ArrayList<OrderItem> exeOrders; //需要做的交易
+    public ArrayList<OrderInfo> recallOrders; // 需要撤单的订单号列表
 
     public boolean printInfo;
 

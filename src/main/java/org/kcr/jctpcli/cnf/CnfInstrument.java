@@ -27,6 +27,8 @@ public class CnfInstrument {
 
 	@Override
 	public String toString() {
-		return "CnfInstrument{" + "instrumentID='" + instrumentID + '\'' + ", exchangeID='" + exchangeID + '\'' + '}';
+		var sb = new StringBuffer(64);
+		sb.append("instrumentID:").append(instrumentID).append("exchangeID:").append(exchangeID);
+		return sb.toString();
 	}
 }

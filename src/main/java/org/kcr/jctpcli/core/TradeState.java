@@ -1,4 +1,4 @@
-package org.kcr.jctpcli.trader;
+package org.kcr.jctpcli.core;
 
 public enum TradeState {
     NotTrade, //未成交

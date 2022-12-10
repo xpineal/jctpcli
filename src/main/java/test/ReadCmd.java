@@ -1,4 +1,4 @@
-package org.kcr.jctpcli;
+package test;
 
 import org.kcr.jctpcli.cnf.FJson;
 

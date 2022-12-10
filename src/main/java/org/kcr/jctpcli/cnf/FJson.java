@@ -21,7 +21,7 @@ public class FJson {
 			reader.close();
 			jsonStr = sb.toString();
 			return jsonStr;
-		} catch (IOException e) {
+		} catch (Exception e) {
 			//e.printStackTrace();
 			return null;
 		}
@@ -33,7 +33,7 @@ public class FJson {
 			var rw = new FileWriter(f);
 			rw.write("");
 			rw.close();
-		}catch (IOException e) {
+		}catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

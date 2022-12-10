@@ -1,7 +1,4 @@
-package org.kcr.jctpcli.trader;
-
-import org.kcr.jctpcli.env.Instrument;
-import org.kcr.jctpcli.env.OrderInfo;
+package org.kcr.jctpcli.core;
 
 public interface ITrader {
     // 开多

@@ -2,10 +2,9 @@ package test;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.kcr.jctpcli.env.Broker;
-import org.kcr.jctpcli.env.ExeRet;
-import org.kcr.jctpcli.env.Hold;
-import org.kcr.jctpcli.env.Instrument;
+import org.kcr.jctpcli.core.Broker;
+import org.kcr.jctpcli.core.ExeRet;
+import org.kcr.jctpcli.core.Hold;
 import org.kcr.jctpcli.mock.MockTrader;
 import org.kcr.jctpcli.strategy.EmptyStrategy;
 

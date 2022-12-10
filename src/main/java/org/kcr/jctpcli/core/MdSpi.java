@@ -1,12 +1,11 @@
-package org.kcr.jctpcli.md;
+package org.kcr.jctpcli.core;
 
 import org.kcr.jctpcli.cnf.Cnf;
-import org.kcr.jctpcli.env.Broker;
-import org.kcr.jctpcli.env.Parameter;
+import org.kcr.jctpcli.util.Recorder;
 import org.kcr.jctpcli.util.Output;
 import org.kr.jctp.*;
 
-public class MixMdSpi extends CThostFtdcMdSpi {
+public class MdSpi extends CThostFtdcMdSpi {
 	private final CThostFtdcMdApi mdApi;
 	private final Broker broker;
 	private final CThostFtdcReqUserLoginField loginField;
@@ -14,7 +13,7 @@ public class MixMdSpi extends CThostFtdcMdSpi {
 
 	private Recorder recorder;
 
-	public MixMdSpi(CThostFtdcMdApi _mdApi, Broker _broker, Cnf _cnf) {
+	public MdSpi(CThostFtdcMdApi _mdApi, Broker _broker, Cnf _cnf) {
 		mdApi = _mdApi;
 		broker = _broker;
 		loginField = new CThostFtdcReqUserLoginField();

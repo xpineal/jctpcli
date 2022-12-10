@@ -1,11 +1,9 @@
-package org.kcr.jctpcli.trader;
+package org.kcr.jctpcli.core;
 
-import org.kcr.jctpcli.env.Hold;
-import org.kcr.jctpcli.env.Parameter;
 import org.kcr.jctpcli.util.Output;
 import org.kr.jctp.*;
 
-public class MixTradeSpi extends CThostFtdcTraderSpi {
+public class TradeSpi extends CThostFtdcTraderSpi {
 	// 初始化标记
 	public Fence fence;
 
@@ -13,7 +11,7 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 	// 持仓对象
 	private Hold hold;
 
-	public MixTradeSpi(TraderCall _traderCall, Hold _hold) {
+	public TradeSpi(TraderCall _traderCall, Hold _hold) {
 		traderCall = _traderCall;
 		hold = _hold;
 		fence = new Fence();
@@ -181,10 +179,7 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			return;
 		}
 
-		if (Parameter.debugMode) {
-			Output.pInputOrder("报单错误", pInputOrder);
-		}
-
+		Output.pInputOrder("报单错误", pInputOrder);
 		// TODO : 后续可以考虑在这里移除追踪的订单，按撤单成功处理
 	}
 
@@ -224,15 +219,53 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 		// 被动撤单和主动撤单都会返回此状态
 		if (pOrder.getOrderStatus() == jctpConstants.THOST_FTDC_OST_Canceled) {
 			// TODO 后续可以做一个序号跟踪保证可重入
-			// pOrder.getSequenceNo()
-			hold.lock();
-			hold.OnOrderCancelled(pOrder.getOrderRef());
-			hold.unlock();
+			onRecall(pOrder);
+		}else {
+
 		}
 
 		if (Parameter.debugMode) {
-			Output.pOrder("报单通知", pOrder);
+			Output.pOrder("报单状态通知", pOrder);
 		}
+	}
+
+	// 撤单处理
+	private void onRecall(CThostFtdcOrderField pOrder) {
+		hold.lock();
+		try {
+			hold.OnOrderCancelled(pOrder.getOrderRef());
+		}catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+			hold.unlock();
+		}
+	}
+
+	private void onRtnOrder(CThostFtdcOrderField pOrder) {
+		hold.lock();
+		try {
+
+		}catch (Exception e) {
+
+		}finally {
+
+		}
+	}
+
+	private void handleEscape(CThostFtdcOrderField pOrder) {
+		var orderRef = pOrder.getOrderRef();
+		var instrumentID = pOrder.getInstrumentID();
+		var exchangeID = pOrder.getExchangeID();
+		var dir = pOrder.getDirection();
+		var offsetFlag = pOrder.getCombOffsetFlag();
+
+	}
+
+	private Direction figureDirection(CThostFtdcOrderField pOrder) {
+		var dir = pOrder.getDirection();
+		var offsetFlag = pOrder.getCombOffsetFlag();
+		// if (dir == jctpConstants.THOST_FTDC_D_Buy && )
+		return Direction.None;
 	}
 
 	// 成交通知
@@ -245,11 +278,21 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 		// TODO 后续可以做一个序号跟踪保证可重入
 		// pTrade.getSequenceNo()
 		// 成交回包
-		hold.lock();
-		hold.OnOrderTrade(pTrade.getOrderRef(), pTrade.getVolume(), pTrade.getPrice());
-		hold.unlock();
+		onTrade(pTrade);
 		if (Parameter.debugMode) {
 			Output.pTrade("成交通知", pTrade);
+		}
+	}
+
+	// 成交处理
+	private void onTrade(CThostFtdcTradeField pTrade) {
+		hold.lock();
+		try{
+			hold.OnOrderTrade(pTrade.getOrderRef(), pTrade.getVolume(), pTrade.getPrice());
+		}catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+			hold.unlock();
 		}
 	}
 
@@ -268,7 +311,6 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 		if (Parameter.debugMode) {
 			Output.pInputOrder("报单录入请求响应", pInputOrder);
 		}
-
 		// TODO ：理论上不用处理，这里是mini的回包
 	}
 
@@ -287,7 +329,6 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 		if (Parameter.debugMode) {
 			Output.pInputOrderAction("报单操作请求响应", pInputOrderAction);
 		}
-
 		// TODO : 理论上不用处理，这里是mini的撤单回包
 	}
 
@@ -302,11 +343,7 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			System.out.println("请求查询报单响应返回信息为空");
 			return;
 		}
-
-		if (Parameter.debugMode) {
-			Output.pOrder("请求查询报单响应", pOrder);
-		}
-
+		Output.pOrder("请求查询报单响应", pOrder);
 	}
 
 	// 请求查询成交响应
@@ -321,9 +358,7 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			return;
 		}
 
-		if (Parameter.debugMode) {
-			Output.pTrade("请求查询成交响应", pTrade);
-		}
+		Output.pTrade("请求查询成交响应", pTrade);
 	}
 
 	// 请求查询合约响应
@@ -337,11 +372,6 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			System.out.println("请求查询合约响应返回信息为空");
 			return;
 		}
-		
-		//if (Parameter.debugMode) {
-			//Output.pInstrument("请求查询合约响应", pInstrument);
-		//}
-
 
 		if (pInstrument.getOptionsType() == 0) {
 			// 设置保证金率 合约乘数 单位价格
@@ -349,14 +379,14 @@ public class MixTradeSpi extends CThostFtdcTraderSpi {
 			if (Parameter.debugMode) {
 				Output.pInstrument("请求查询合约响应", pInstrument);
 			}
+			fence.doneInstrument();
 		}
 
 		if (bIsLast) {
 			// 查询手续费
-			System.out.println("start to query commission rate --------------");
-			traderCall.queryInstrumentCommissionRate(hold.instrument);
-			fence.doneInstrument();
-			
+			// System.out.println("start to query commission rate --------------");
+			// traderCall.queryInstrumentCommissionRate(hold.instrument);
+
 			// 查询手续费及率
 			hold.instrument.setRatio(1);
 			fence.doneCommissionRate();

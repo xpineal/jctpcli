@@ -1,4 +1,4 @@
-package org.kcr.jctpcli.env;
+package org.kcr.jctpcli.core;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;

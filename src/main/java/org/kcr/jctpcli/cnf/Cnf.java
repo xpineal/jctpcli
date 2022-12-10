@@ -15,13 +15,20 @@ public class Cnf {
 	private String appID;
 	private String authCode;
 
+	// 增加的保证金率
+	private double addMargin;
+	// 开仓手续费
+	private double openRatio;
+	// 平仓手续费
+	private double closeRatio;
+
 	private CnfInstrument[] instruments;
 
 	private String[] symbols;
 	private Map<String, String> instrHash;
 
 	public Cnf(String tradeServer, String mdServer, String brokerID, String accountID, String password, String appID,
-			String authCode, CnfInstrument[] instruments) {
+			String authCode, double addMargin, double openRatio, double closeRatio, CnfInstrument[] instruments) {
 		this.tradeServer = tradeServer;
 		this.mdServer = mdServer;
 		this.brokerID = brokerID;
@@ -29,8 +36,28 @@ public class Cnf {
 		this.password = password;
 		this.appID = appID;
 		this.authCode = authCode;
+		this.addMargin = addMargin;
+		this.openRatio = openRatio;
+		this.closeRatio = closeRatio;
 		this.instruments = instruments;
 		this.instrHash = new HashMap<String, String>();
+	}
+
+	@Override
+	public String toString() {
+		var sb = new StringBuffer(512);
+		sb.append("traderServer:").append(tradeServer).append(",");
+		sb.append("mdServer:").append(mdServer).append(",");
+		sb.append("brokerID:").append(brokerID).append(",");
+		sb.append("accountID:").append(accountID).append(",");
+		sb.append("password:").append(password).append(",");
+		sb.append("appID:").append(appID).append(",");
+		sb.append("authCode:").append(authCode).append(",");
+		sb.append("addMargin:").append(addMargin).append(",");
+		sb.append("openRatio:").append(openRatio).append(",");
+		sb.append("closeRatio:").append(closeRatio).append(",");
+		sb.append("instruments:").append(Arrays.toString(instruments));
+		return sb.toString();
 	}
 
 	public void refresh() {
@@ -48,14 +75,6 @@ public class Cnf {
 
 	public String[] getSymbols() {
 		return symbols;
-	}
-
-	@Override
-	public String toString() {
-		return "Cnf{" + "tradeServer='" + tradeServer + '\'' + ", mdServer='" + mdServer + '\'' + ", brokerID='"
-				+ brokerID + '\'' + ", accountID='" + accountID + '\'' + ", password='" + password + '\'' + ", appID='"
-				+ appID + '\'' + ", authCode='" + authCode + '\'' + ", instruments=" + Arrays.toString(instruments)
-				+ '}';
 	}
 
 	public String getTradeServer() {
@@ -112,6 +131,30 @@ public class Cnf {
 
 	public void setAuthCode(String authCode) {
 		this.authCode = authCode;
+	}
+
+	public double getAddMargin() {
+		return addMargin;
+	}
+
+	public void setAddMargin(double addMargin) {
+		this.addMargin = addMargin;
+	}
+
+	public double getOpenRatio() {
+		return openRatio;
+	}
+
+	public void setOpenRatio(double openRatio) {
+		this.openRatio = openRatio;
+	}
+
+	public double getCloseRatio() {
+		return closeRatio;
+	}
+
+	public void setCloseRatio(double closeRatio) {
+		this.closeRatio = closeRatio;
 	}
 
 	public CnfInstrument[] getInstruments() {

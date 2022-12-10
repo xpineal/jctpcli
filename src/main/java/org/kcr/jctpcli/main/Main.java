@@ -1,26 +1,21 @@
-package org.kcr.jctpcli;
+package org.kcr.jctpcli.main;
 
+import org.kcr.jctpcli.core.*;
 import org.kcr.jctpcli.cnf.FJson;
-import org.kcr.jctpcli.env.*;
-import org.kcr.jctpcli.md.MixMdSpi;
 import org.kcr.jctpcli.strategy.ManualStrategy;
-import org.kcr.jctpcli.trader.MixTradeSpi;
-import org.kcr.jctpcli.trader.TraderCall;
 import org.kr.jctp.CThostFtdcMdApi;
 import org.kr.jctp.CThostFtdcTraderApi;
 import org.kr.jctp.THOST_TE_RESUME_TYPE;
 
-public class Mix {
+public class Main {
 	public static void main(String[] args) throws InterruptedException {
 		// 输出测试信息
 		if (args.length > 0) {
-//			if (args[0].equals("debug")) {
-//				Parameter.debugMode = true;
-//			}
+			if (args[0].equals("debug")) {
+				Parameter.debugMode = true;
+			}
 		}
 
-		Parameter.debugMode = true;
-		
 		// 读取配置文件
 		var cnf = FJson.readCnf("./cnf.json");
 		cnf.refresh();
@@ -29,6 +24,7 @@ public class Mix {
 			System.out.println("没有相关的合约配置");
 			return;
 		}
+		Parameter.cnf = cnf;
 		System.out.println("配置文件读取成功");
 
 		// 交易接口的封装
@@ -44,7 +40,7 @@ public class Mix {
 		var broker = new Broker(traderCall,  new ManualStrategy(), hold);
 
 		// 交易环境
-		var tradeSpi = new MixTradeSpi(traderCall, hold);
+		var tradeSpi = new TradeSpi(traderCall, hold);
 		traderApi.RegisterSpi(tradeSpi);
 		traderApi.SubscribePrivateTopic(THOST_TE_RESUME_TYPE.THOST_TERT_QUICK);
 		traderApi.SubscribePublicTopic(THOST_TE_RESUME_TYPE.THOST_TERT_QUICK);
@@ -65,7 +61,7 @@ public class Mix {
 
 		// 行情环境
 		var mdApi = CThostFtdcMdApi.CreateFtdcMdApi();
-		var pMdSpi = new MixMdSpi(mdApi, broker, cnf);
+		var pMdSpi = new MdSpi(mdApi, broker, cnf);
 		mdApi.RegisterSpi(pMdSpi);
 		mdApi.RegisterFront(cnf.getMdServer());
 		mdApi.Init();

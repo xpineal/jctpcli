@@ -1,8 +1,8 @@
 package org.kcr.jctpcli.strategy;
 
+import org.kcr.jctpcli.core.*;
 import org.kcr.jctpcli.cnf.Cmd;
 import org.kcr.jctpcli.cnf.FJson;
-import org.kcr.jctpcli.env.*;
 
 public class ManualStrategy implements IStrategy {
     public TradeCmd makeDecision(RunData runData) {

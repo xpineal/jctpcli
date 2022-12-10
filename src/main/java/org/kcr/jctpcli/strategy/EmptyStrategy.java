@@ -1,8 +1,8 @@
 package org.kcr.jctpcli.strategy;
 
-import org.kcr.jctpcli.env.IStrategy;
-import org.kcr.jctpcli.env.RunData;
-import org.kcr.jctpcli.env.TradeCmd;
+import org.kcr.jctpcli.core.IStrategy;
+import org.kcr.jctpcli.core.RunData;
+import org.kcr.jctpcli.core.TradeCmd;
 
 public class EmptyStrategy implements IStrategy {
     public TradeCmd makeDecision(RunData runData) {

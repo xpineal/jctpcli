@@ -1,6 +1,6 @@
-package org.kcr.jctpcli.md;
+package org.kcr.jctpcli.util;
 
-import org.kcr.jctpcli.env.Parameter;
+import org.kcr.jctpcli.core.Parameter;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;

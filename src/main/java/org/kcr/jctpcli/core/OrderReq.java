@@ -1,4 +1,4 @@
-package org.kcr.jctpcli.trader;
+package org.kcr.jctpcli.core;
 
 //封装订单请求
 public class OrderReq {
@@ -15,9 +15,5 @@ public class OrderReq {
 	public String toString() {
 		return "OrderReq{" + "requestID=" + requestID + ", resultCode=" + resultCode + ", orderRef='" + orderRef + '\''
 				+ '}';
-	}
-
-	public void outConsole() {
-		System.out.printf("报单 单号:%s 请求:%d -- 回应:%d\n", orderRef, requestID, resultCode);
 	}
 }

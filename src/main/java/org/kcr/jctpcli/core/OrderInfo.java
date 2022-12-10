@@ -1,4 +1,4 @@
-package org.kcr.jctpcli.env;
+package org.kcr.jctpcli.core;
 
 // 订单号和订单内容
 public class OrderInfo implements Comparable {

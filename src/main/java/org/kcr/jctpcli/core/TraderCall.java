@@ -1,16 +1,12 @@
-package org.kcr.jctpcli.trader;
+package org.kcr.jctpcli.core;
 
-import org.kcr.jctpcli.env.Instrument;
-import org.kcr.jctpcli.env.OrderInfo;
-import org.kcr.jctpcli.env.OrderItem;
-import org.kcr.jctpcli.env.OrderTracker;
 import org.kcr.jctpcli.util.Output;
 import org.kr.jctp.*;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class TraderCall implements ITrader{
+public class TraderCall implements ITrader {
 	// flag
 	// 开平标记 THOST_FTDC_OF_CloseToday
 	private static final String open = Character.toString(jctpConstants.THOST_FTDC_OF_Open);
@@ -32,7 +28,7 @@ public class TraderCall implements ITrader{
 	private final AtomicLong orderRefAtom;
 
 	// 订单跟踪
-	private OrderTracker orderTracker;
+	private final OrderTracker orderTracker;
 
 	// 构造函数
 	public TraderCall(CThostFtdcTraderApi _traderApi, OrderTracker _orderTracker,
@@ -214,7 +210,7 @@ public class TraderCall implements ITrader{
 
 	// 查询合约
 	public TraderReq queryInstrument(String instrumentID, String exchangeID) {
-		var qry = genQryInstrument(instrumentID, exchangeID, "", "");
+		var qry = genQryInstrument(instrumentID, exchangeID);
 		var r = genReq();
 		r.resultCode = traderApi.ReqQryInstrument(qry, r.requestID);
 		return r;
@@ -222,13 +218,12 @@ public class TraderCall implements ITrader{
 
 
 	// 生成查询合约的对象
-	private CThostFtdcQryInstrumentField genQryInstrument(String instrumentID, String exchangeID,
-														  String instrIDInExchange, String productID) {
+	private CThostFtdcQryInstrumentField genQryInstrument(String instrumentID, String exchangeID) {
 		var qry = new CThostFtdcQryInstrumentField();
 		qry.setInstrumentID(instrumentID);
 		qry.setExchangeID(exchangeID);
-		qry.setExchangeInstID(instrIDInExchange);
-		qry.setProductID(productID);
+		qry.setExchangeInstID("");
+		qry.setProductID("");
 		return qry;
 	}
 
@@ -237,10 +232,10 @@ public class TraderCall implements ITrader{
 		return genOrder(instrument, price, vol, isBuy, isOpen, jctpConstants.THOST_FTDC_TC_GFD);
 	}
 
-	private CThostFtdcInputOrderField genFAKOrder(
+	/*private CThostFtdcInputOrderField genFAKOrder(
 			Instrument instrument, double price, int vol, boolean isBuy, boolean isOpen) {
 		return genOrder(instrument, price, vol, isBuy, isOpen, jctpConstants.THOST_FTDC_TC_IOC);
-	}
+	}*/
 
 	// 生成订单的对象
 	// isBuy ： buy:开多，平空 , sell:开空，平多
@@ -252,8 +247,8 @@ public class TraderCall implements ITrader{
 	private CThostFtdcInputOrderField genOrder(
 			Instrument instrument, double price, int vol, boolean isBuy, boolean isOpen, char type) {
 		var order = new CThostFtdcInputOrderField();
-		//var orderRef = "ref-"+Long.toString(orderRefAtom.incrementAndGet());
-		var orderRef = Long.toString(orderRefAtom.incrementAndGet());
+		var orderRef = Parameter.orderRefPrefix +orderRefAtom.incrementAndGet();
+		//var orderRef = Long.toString(orderRefAtom.incrementAndGet());
 		order.setBrokerID(brokerID); //broker id
 		order.setInvestorID(investorID); //investor id
 		order.setInstrumentID(instrument.instrumentID); //合约id

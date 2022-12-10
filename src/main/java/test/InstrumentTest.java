@@ -1,12 +1,10 @@
 package test;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.kcr.jctpcli.env.Direction;
-import org.kcr.jctpcli.env.Instrument;
-import org.kcr.jctpcli.env.OrderInfo;
+import org.kcr.jctpcli.core.Direction;
+import org.kcr.jctpcli.core.Instrument;
+import org.kcr.jctpcli.core.OrderInfo;
 
 import static org.junit.jupiter.api.Assertions.*;
 

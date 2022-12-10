@@ -1,4 +1,4 @@
-package org.kcr.jctpcli.env;
+package org.kcr.jctpcli.core;
 
 public enum ExeRet {
     OK, // 执行成功

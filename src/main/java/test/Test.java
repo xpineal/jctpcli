@@ -1,4 +1,4 @@
-package org.kcr.jctpcli;
+package test;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

@@ -1,6 +1,4 @@
-package org.kcr.jctpcli.env;
-
-import org.kcr.jctpcli.trader.TradeState;
+package org.kcr.jctpcli.core;
 
 import java.util.ArrayList;
 import java.util.HashMap;

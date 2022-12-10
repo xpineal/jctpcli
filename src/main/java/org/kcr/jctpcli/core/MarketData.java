@@ -1,4 +1,4 @@
-package org.kcr.jctpcli.md;
+package org.kcr.jctpcli.core;
 
 import org.kr.jctp.CThostFtdcDepthMarketDataField;
 
