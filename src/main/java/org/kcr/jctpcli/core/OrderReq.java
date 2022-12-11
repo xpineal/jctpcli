@@ -13,7 +13,10 @@ public class OrderReq {
 
 	@Override
 	public String toString() {
-		return "OrderReq{" + "requestID=" + requestID + ", resultCode=" + resultCode + ", orderRef='" + orderRef + '\''
-				+ '}';
+		var sb = new StringBuffer(128);
+		sb.append("requestID:").append(requestID).append(",");
+		sb.append("resultCode:").append(resultCode).append(",");
+		sb.append("orderRef:").append(orderRef);
+		return sb.toString();
 	}
 }

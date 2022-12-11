@@ -12,10 +12,9 @@ public class TraderReq {
 
 	@Override
 	public String toString() {
-		return "TradeReq{" + "requestID=" + requestID + ", resultCode=" + resultCode + '}';
-	}
-
-	public void outConsole(String head) {
-		Output.pRequest(head, this);
+		var sb = new StringBuffer(128);
+		sb.append("requestID:").append(requestID).append(",");
+		sb.append("resultCode:").append(resultCode);
+		return sb.toString();
 	}
 }

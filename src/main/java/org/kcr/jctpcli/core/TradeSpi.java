@@ -9,11 +9,11 @@ public class TradeSpi extends CThostFtdcTraderSpi {
 
 	private ITrader traderCall;
 	// 持仓对象
-	private Hold hold;
+	private Hand hand;
 
-	public TradeSpi(TraderCall _traderCall, Hold _hold) {
+	public TradeSpi(TraderCall _traderCall, Hand _hand) {
 		traderCall = _traderCall;
-		hold = _hold;
+		hand = _hand;
 		fence = new Fence();
 	}
 
@@ -81,24 +81,40 @@ public class TradeSpi extends CThostFtdcTraderSpi {
 		}		
 	}
 
-//	// 投资人信息
-//	@Override
-//	public void OnRspQryInvestor(CThostFtdcInvestorField pInvestor, CThostFtdcRspInfoField pRspInfo, int nRequestID,
-//			boolean bIsLast) {
-//		if (Output.pResponse("投资人信息", pRspInfo, nRequestID, bIsLast)) {
-//			return;
-//		}
-//		if (pInvestor == null) {
-//			System.out.printf("投资人返回信息为空:%d-%b\n", nRequestID, bIsLast);
-//			return;
-//		}
-//
-//		env.bInvestor = true;
-//
-//		if (Prameter.debugMode) {
-//			Output.pInvestor("投资人信息", pInvestor);
-//		}
-//	}
+	// 设置登录后相关字段
+	private void setupEnvAfterLogin(CThostFtdcRspUserLoginField rsp) {
+		long rf;
+
+		var frontID = rsp.getFrontID();
+		var sessionID = rsp.getSessionID();
+		var maxOrderRef = rsp.getMaxOrderRef();
+
+		if (maxOrderRef != null && (!maxOrderRef.strip().equals(""))) {
+			rf = Long.parseLong(maxOrderRef);
+		} else {
+			rf = 0;
+		}
+		traderCall.setAtom(frontID, sessionID, rf);
+	}
+
+	// 投资人信息
+	/*@Override
+	public void OnRspQryInvestor(CThostFtdcInvestorField pInvestor, CThostFtdcRspInfoField pRspInfo, int nRequestID,
+			boolean bIsLast) {
+		if (Output.pResponse("投资人信息", pRspInfo, nRequestID, bIsLast)) {
+			return;
+		}
+		if (pInvestor == null) {
+			System.out.printf("投资人返回信息为空:%d-%b\n", nRequestID, bIsLast);
+			return;
+		}
+
+		env.bInvestor = true;
+
+		if (Prameter.debugMode) {
+			Output.pInvestor("投资人信息", pInvestor);
+		}
+	}*/
 
 	// 请求查询资金账户响应
 	@Override
@@ -116,16 +132,15 @@ public class TradeSpi extends CThostFtdcTraderSpi {
 		// traderCall.queryInvestorPosition("");
 				
 		// 查询资金账户可用资金
-		hold.available = pTradingAccount.getAvailable();
+		hand.available = pTradingAccount.getAvailable();
 		fence.doneAccount();
 
 		if (bIsLast) {
 			if (Parameter.debugMode) {
 				Output.pTradingAccount("请求查询资金账户响应", pTradingAccount);
 			}
-			System.out.println("start to query instrument --------------");
-			// 查询合约
-			traderCall.queryInstrument(hold.instrument.instrumentID, hold.instrument.exchangeID);			
+			System.out.println("开始查询持仓 --------------");
+			traderCall.queryInvestorPosition("");
 		}
 	}
 
@@ -141,32 +156,45 @@ public class TradeSpi extends CThostFtdcTraderSpi {
 			return;
 		}
 
-		// 查询合约
-		traderCall.queryInstrument(hold.instrument.instrumentID, hold.instrument.exchangeID);
-		// pInvestorPosition.getPositionDate();// ‘1’ 当日仓 ‘2‘ 历史仓
 		if (Parameter.debugMode) {
 			Output.pInvestorPosition("请求查询投资者持仓响应", pInvestorPosition);
 		}
+		if (bIsLast) {
+			// 查询合约
+			queryInstruments();
+		}
 	}
 
-//	// 投资者持仓明细
-//	@Override
-//	public void OnRspQryInvestorPositionDetail(CThostFtdcInvestorPositionDetailField pInvestorPositionDetail,
-//			CThostFtdcRspInfoField pRspInfo, int nRequestID, boolean bIsLast) {
-//		if (Output.pResponse("投资者持仓明细", pRspInfo, nRequestID, bIsLast)) {
-//			return;
-//		}
-//		if (pInvestorPositionDetail == null) {
-//			System.out.printf("投资者持仓明细返回为空:%d-%b\n", nRequestID, bIsLast);
-//			return;
-//		}
-//
-//		if (Prameter.debugMode) {
-//			Output.pInvestorPositionDetail("投资者持仓明细", pInvestorPositionDetail);
-//		}
-//
-//	}
-//
+	private void queryInstruments() {
+		var ins = Parameter.cnf.getInstruments();
+		var size = ins.length;
+		for (int i = 0; i < size; i++) {
+			var instrumentID = ins[i].getInstrumentID();
+			var r = traderCall.queryInstrument(instrumentID, ins[i].getExchangeID());
+			if (r.resultCode != 0) {
+				System.out.printf("query instrument %s error code:%d\n", instrumentID, r.resultCode);
+			}
+		}
+	}
+
+	// 投资者持仓明细
+	/*@Override
+	public void OnRspQryInvestorPositionDetail(CThostFtdcInvestorPositionDetailField pInvestorPositionDetail,
+			CThostFtdcRspInfoField pRspInfo, int nRequestID, boolean bIsLast) {
+		if (Output.pResponse("投资者持仓明细", pRspInfo, nRequestID, bIsLast)) {
+			return;
+		}
+		if (pInvestorPositionDetail == null) {
+			System.out.printf("投资者持仓明细返回为空:%d-%b\n", nRequestID, bIsLast);
+			return;
+		}
+
+		if (Prameter.debugMode) {
+			Output.pInvestorPositionDetail("投资者持仓明细", pInvestorPositionDetail);
+		}
+
+	}*/
+
 	// 报单错误回报
 	@Override
 	public void OnErrRtnOrderInsert(CThostFtdcInputOrderField pInputOrder, CThostFtdcRspInfoField rsp) {
@@ -231,18 +259,18 @@ public class TradeSpi extends CThostFtdcTraderSpi {
 
 	// 撤单处理
 	private void onRecall(CThostFtdcOrderField pOrder) {
-		hold.lock();
+		hand.lock();
 		try {
-			hold.OnOrderCancelled(pOrder.getOrderRef());
+			hand.OnOrderCancelled(pOrder.getOrderRef());
 		}catch (Exception e) {
 			e.printStackTrace();
 		}finally {
-			hold.unlock();
+			hand.unlock();
 		}
 	}
 
 	private void onRtnOrder(CThostFtdcOrderField pOrder) {
-		hold.lock();
+		hand.lock();
 		try {
 
 		}catch (Exception e) {
@@ -286,13 +314,13 @@ public class TradeSpi extends CThostFtdcTraderSpi {
 
 	// 成交处理
 	private void onTrade(CThostFtdcTradeField pTrade) {
-		hold.lock();
+		hand.lock();
 		try{
-			hold.OnOrderTrade(pTrade.getOrderRef(), pTrade.getVolume(), pTrade.getPrice());
+			hand.OnOrderTrade(pTrade.getOrderRef(), pTrade.getVolume(), pTrade.getPrice());
 		}catch (Exception e) {
 			e.printStackTrace();
 		}finally {
-			hold.unlock();
+			hand.unlock();
 		}
 	}
 
@@ -375,27 +403,38 @@ public class TradeSpi extends CThostFtdcTraderSpi {
 
 		if (pInstrument.getOptionsType() == 0) {
 			// 设置保证金率 合约乘数 单位价格
-			hold.instrument.setInstrumentRatio(pInstrument);
+			onRspQryInstrument(pInstrument);
 			if (Parameter.debugMode) {
 				Output.pInstrument("请求查询合约响应", pInstrument);
 			}
-			fence.doneInstrument();
 		}
 
-		if (bIsLast) {
+		/*if (bIsLast) {
 			// 查询手续费
 			// System.out.println("start to query commission rate --------------");
 			// traderCall.queryInstrumentCommissionRate(hold.instrument);
 
 			// 查询手续费及率
-			hold.instrument.setRatio(1);
+			hand.instrument.setRatio(1);
 			fence.doneCommissionRate();
+		}*/
+	}
+
+	// 合约信息处理
+	private void onRspQryInstrument(CThostFtdcInstrumentField pInstrument) {
+		hand.lock();
+		try{
+			// 设置保证金率 合约乘数 单位价格
+			hand.upsertInstrument(pInstrument);
+		}catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+			hand.unlock();
 		}
-		
 	}
 
 	// 请求查询合约手续费率响应
-	@Override
+	/*@Override
 	public void OnRspQryInstrumentCommissionRate(CThostFtdcInstrumentCommissionRateField pInstrumentCommissionRate,
 			CThostFtdcRspInfoField pRspInfo, int nRequestID, boolean bIsLast) {
 		if (Output.pResponse("请求查询合约手续费率响应", pRspInfo, nRequestID, bIsLast)) {
@@ -406,32 +445,16 @@ public class TradeSpi extends CThostFtdcTraderSpi {
 			return;
 		}
 		// 查询手续费及率
-		hold.instrument.setRatio(pInstrumentCommissionRate);
+		hand.instrument.setRatio(pInstrumentCommissionRate);
 		fence.doneCommissionRate();
 
 		if (Parameter.debugMode) {
 			Output.pInstrumentCommissionRate("请求查询合约手续费率响应", pInstrumentCommissionRate);
 		}
-	}
-
-	// 设置登录后相关字段
-	private void setupEnvAfterLogin(CThostFtdcRspUserLoginField rsp) {
-		long rf;
-
-		var frontID = rsp.getFrontID();
-		var sessionID = rsp.getSessionID();
-		var maxOrderRef = rsp.getMaxOrderRef();
-
-		if (maxOrderRef != null && (!maxOrderRef.strip().equals(""))) {
-			rf = Long.parseLong(maxOrderRef);
-		} else {
-			rf = 0;
-		}
-		traderCall.setAtom(frontID, sessionID, rf);
-	}
+	}*/
 
 	// 设置登录后相关参数
-	private void setupParameterAfterLogin() {
+	/*private void setupParameterAfterLogin() {
 		// 查询投资人信息
 		// traderCall.queryInvestor();
 		// 查询资金账户
@@ -444,5 +467,5 @@ public class TradeSpi extends CThostFtdcTraderSpi {
 		// traderCall.queryInstrumentMarginRate(Prameter.instrumentID);
 		// 查询手续费
 		// traderCall.queryInstrumentCommissionRate(hold.instrument.instrumentID);
-	}
+	}*/
 }

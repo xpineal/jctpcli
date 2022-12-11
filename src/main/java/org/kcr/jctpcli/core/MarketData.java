@@ -125,7 +125,8 @@ public class MarketData {
         brandingLowerPrice = pDepthMarketData.getBandingLowerPrice();
     }
 
-    public String brief() {
+    @Override
+    public String toString() {
         var sb = new StringBuffer(512);
         sb.append("updateTime:").append(updateTime).append(",");
         sb.append("bidPrice1:").append(bidPrice1).append(",");

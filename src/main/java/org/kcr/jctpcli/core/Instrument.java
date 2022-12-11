@@ -34,29 +34,10 @@ public class Instrument {
     public boolean closeToday = false;
 
     // 合约持仓信息
-    // 多头持仓和价格
-    public int buyVol = 0;
-    public double buyPrice = 0;
-    public double actBuyPrice = 0;
-    public double marginBuyPrice = 0;
-    // 多单利润
-    public double buyProfile = 0;
-    // 开多手续费总和
-    public double openBuyTotalFee = 0;
-    // 平多手续费总和
-    public double closeBuyTotalFee = 0;
-
-    // 空头持仓和价格
-    public int sellVol = 0;
-    public double sellPrice = 0;
-    public double actSellPrice = 0;
-    public double marginSellPrice = 0;
-    // 空单利润
-    public double sellProfile = 0;
-    // 开空手续费总和
-    public double openSellTotalFee = 0;
-    // 平空手续费
-    public double closeSellTotalFee = 0;
+    // 多头持仓相关信息
+    public Hold buyHold = new Hold();
+    // 空头持仓相关信息
+    public Hold sellHold = new Hold();
 
     public Instrument(String _exchangeID, String _instrumentID) {
         exchangeID = _exchangeID;
@@ -69,45 +50,53 @@ public class Instrument {
         closeToday = _closeToday;
     }
 
-    public String holdInfo() {
+    @Override
+    public String toString() {
         var sb = new StringBuffer(512);
         sb.append("多 -- ");
-        sb.append("数量:").append(buyVol).append(",");
-        sb.append("价格:").append(buyPrice).append(",");
-        sb.append("实际价格:").append(actBuyPrice).append(",");
-        sb.append("保证金价格:").append(marginBuyPrice).append(",");
-        sb.append("利润:").append(buyProfile).append(",");
-        sb.append("开手续费:").append(openBuyTotalFee).append(",");
-        sb.append("平手续费:").append(closeBuyTotalFee).append("\n");
+        sb.append(buyHold).append("\n");
 
         sb.append("空 -- ");
-        sb.append("数量:").append(sellVol).append(",");
-        sb.append("价格:").append(sellPrice).append(",");
-        sb.append("实际价格:").append(actSellPrice).append(",");
-        sb.append("保证金价格:").append(marginSellPrice).append(",");
-        sb.append("利润:").append(sellProfile).append(",");
-        sb.append("开手续费:").append(openSellTotalFee).append(",");
-        sb.append("平手续费:").append(closeSellTotalFee).append("\n");
+        sb.append(sellHold).append("\n");
         return sb.toString();
     }
 
-    private void appendHold(boolean isBuy) {
-
-    }
-
     public void setInstrumentRatio(CThostFtdcInstrumentField pInstrument) {
+        // 额外的手续费从API中拿不到，需要从配置读取
+        var addMargin = Parameter.cnf.getAddMargin();
+        // 手续费查不到，需要从配置读取
+        openRatioByVolume = Parameter.cnf.getOpenRatio();
+        closeRatioByVolume =  Parameter.cnf.getCloseRatio();
+
         // 多头保证金率
-        longMarginRatio = pInstrument.getLongMarginRatio();
+        longMarginRatio = pInstrument.getLongMarginRatio() + addMargin;
         // 空头保证金率
-        shortMarginRatio = pInstrument.getShortMarginRatio();
+        shortMarginRatio = pInstrument.getShortMarginRatio() + addMargin;
         // 合约乘数
         volumeMultiple = pInstrument.getVolumeMultiple();
         // 合约最小变动价格
         priceTick = pInstrument.getPriceTick();
     }
 
+    public void setInstrumentRatio(InstrInfo pInstrument) {
+        // 额外的手续费从API中拿不到，需要从配置读取
+        var addMargin = Parameter.cnf.getAddMargin();
+        // 手续费查不到，需要从配置读取
+        openRatioByVolume = Parameter.cnf.getOpenRatio();
+        closeRatioByVolume =  Parameter.cnf.getCloseRatio();
+
+        // 多头保证金率
+        longMarginRatio = pInstrument.longMarginRatio + addMargin;
+        // 空头保证金率
+        shortMarginRatio = pInstrument.shortMarginRatio + addMargin;
+        // 合约乘数
+        volumeMultiple = pInstrument.volumeMultiple;
+        // 合约最小变动价格
+        priceTick = pInstrument.priceTick;
+    }
+
     // 查询手续费及率
-    public void setRatio(CThostFtdcInstrumentCommissionRateField tc) {
+    /*public void setRatio(CThostFtdcInstrumentCommissionRateField tc) {
         // 开仓手续费率
         openRatioByMoney = tc.getOpenRatioByMoney();
         // 开仓手续费
@@ -125,7 +114,7 @@ public class Instrument {
     public void setRatio(double _ratio) {
     	openRatioByVolume = _ratio;
     	closeRatioByVolume = _ratio;
-    }
+    }*/
      
     // 开多平多保证金
     public double buyMargin(double price, int volume) {
@@ -198,77 +187,43 @@ public class Instrument {
 
     // 开多
     private void OnOpenBuy(OrderInfo order) {
-        var total = buyPrice*buyVol + order.total();
         // 实际的价格需要考虑手续费
-        var actTotal = actBuyPrice*buyVol + order.total() + openFeePrice(order.orderItem.volume);
-        // 实缴保证金
-        var marginTotal = marginBuyPrice*buyVol + buyMargin(order.orderItem.price, order.orderItem.volume);
-        buyVol += order.orderItem.volume;
-        openBuyTotalFee += openFee(order.orderItem.volume);
-
-        if (buyVol > 0) {
-            buyPrice = total/buyVol;
-            actBuyPrice = actTotal/buyVol;
-            marginBuyPrice = marginTotal/buyVol;
-        }else {
-            System.out.printf("错误的开多订单信息:%s\n", order.ToString());
+        if (!buyHold.addVol(order.orderItem.volume,  order.total() + openFeePrice(order.orderItem.volume),
+                buyMargin(order.orderItem.price, order.orderItem.volume), openFee(order.orderItem.volume))){
+            System.out.printf("错误的开多订单信息:%s\n", order);
         }
     }
 
     // 开空
     private void OnOpenSell(OrderInfo order) {
-        var total = sellPrice*sellVol + order.total();
         // 实际的价格需要考虑手续费
-        var actTotal = actSellPrice*sellVol + order.total() - openFeePrice(order.orderItem.volume);
-        // 实缴保证金
-        var marginTotal = marginSellPrice*sellVol + sellMargin(order.orderItem.price, order.orderItem.volume);
-        sellVol += order.orderItem.volume;
-        openSellTotalFee += openFee(order.orderItem.volume);
-
-        if (sellVol > 0) {
-            sellPrice = total/sellVol;
-            actSellPrice = actTotal/sellVol;
-            marginSellPrice = marginTotal/sellVol;
-        }else {
-            System.out.printf("错误的开空订单信息:%s\n", order.ToString());
+        if (!sellHold.addVol(order.orderItem.volume,order.total() - openFeePrice(order.orderItem.volume),
+                sellMargin(order.orderItem.price, order.orderItem.volume),  openFee(order.orderItem.volume))){
+            System.out.printf("错误的开空订单信息:%s\n", order);
         }
     }
 
     // 平多 -- 返回可用资金增量(包括返还的保证金+利润+开平手续费)
     // 返回对应保证金+利润
     private double OnCloseBuy(OrderInfo order) {
-        if (order.orderItem.volume > buyVol) {
-            System.out.printf("错误的平多订单信息:%s\n", order.ToString());
+        if (order.orderItem.volume > buyHold.vol) {
+            System.out.printf("错误的平多订单信息:%s\n", order);
             return 0;
         }
-        var cf = closeFee(order.orderItem.volume);
-        closeBuyTotalFee += cf;
-        // 计算系统返还的保证金
-        var retMargin = marginBuyPrice*order.orderItem.volume;
-        // 计算利润
-        var benefit = profile(order.orderItem.price-actBuyPrice, order.orderItem.volume) - cf;
-        buyProfile += benefit;
-        buyVol -= order.orderItem.volume;
-        // 返回可用资金增量 = 返还的保证金+开平手续费(手续费计入到价格中了，这里需要加回来)
-        return retMargin + benefit + cf + openFee(order.orderItem.volume);
+        return buyHold.reduceVol(order.orderItem.volume,
+                profile(order.orderItem.price-buyHold.price, order.orderItem.volume),
+                openFee(order.orderItem.volume), closeFee(order.orderItem.volume));
     }
 
     // 平空 -- 返回可用资金增量(包括返还的保证金+利润+开平手续费)
     private double OnCloseSell(OrderInfo order) {
-        if (order.orderItem.volume > sellVol) {
-            System.out.printf("错误的平空订单信息:%s\n", order.ToString());
+        if (order.orderItem.volume > sellHold.vol) {
+            System.out.printf("错误的平空订单信息:%s\n", order);
             return 0;
         }
-        var cf = closeFee(order.orderItem.volume);
-        closeSellTotalFee += cf;
-        // 计算系统返还的保证金
-        var retMargin = marginSellPrice*order.orderItem.volume;
-        // 计算利润
-        var benefit = profile(actSellPrice-order.orderItem.price, order.orderItem.volume) - cf;
-        sellProfile += benefit;
-        sellVol -= order.orderItem.volume;
-        // 返回可用资金增量 = 返还的保证金+开平手续费(手续费计入到价格中了，这里需要加回来)
-        return retMargin + benefit + cf + openFee(order.orderItem.volume);
+        return sellHold.reduceVol(order.orderItem.volume,
+                profile(sellHold.price-order.orderItem.price, order.orderItem.volume),
+                openFee(order.orderItem.volume), closeFee(order.orderItem.volume));
     }
 
 }

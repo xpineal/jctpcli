@@ -93,7 +93,7 @@ public class TraderCall implements ITrader {
 		if (r.resultCode == 0) {
 			// 如果返回不是0，表示订单没有发送成功
 			// 添加到追踪hash表中
-			orderTracker.OnOpenBuyReq(r.orderRef, volume, price, instrument.exchangeID, instrument.instrumentID);
+			orderTracker.OnOpenBuyReq(r.orderRef, new OrderItem(volume, price, instrument.instrumentID));
 			return true;
 		}
 		return false;
@@ -106,7 +106,7 @@ public class TraderCall implements ITrader {
 		if (r.resultCode == 0) {
 			// 如果返回不是0，表示订单没有发送成功
 			// 添加到追踪hash表中
-			orderTracker.OnCloseBuyReq(r.orderRef, volume, price, instrument.exchangeID, instrument.instrumentID);
+			orderTracker.OnCloseBuyReq(r.orderRef, new OrderItem(volume, price, instrument.instrumentID));
 			return true;
 		}
 		return false;
@@ -119,7 +119,7 @@ public class TraderCall implements ITrader {
 		if (r.resultCode == 0) {
 			// 如果返回不是0，表示订单没有发送成功
 			// 添加到追踪hash表中
-			orderTracker.OnOpenSellReq(r.orderRef, volume, price, instrument.exchangeID, instrument.instrumentID);
+			orderTracker.OnOpenSellReq(r.orderRef, new OrderItem(volume, price, instrument.instrumentID));
 			return true;
 		}
 		return false;
@@ -132,15 +132,15 @@ public class TraderCall implements ITrader {
 		if (r.resultCode == 0) {
 			// 如果返回不是0，表示订单没有发送成功
 			// 添加到追踪hash表中
-			orderTracker.OnCloseSellReq(r.orderRef, volume, price, instrument.exchangeID, instrument.instrumentID);
+			orderTracker.OnCloseSellReq(r.orderRef, new OrderItem(volume, price, instrument.instrumentID));
 			return true;
 		}
 		return false;
 	}
 
 	// 撤单
-	public void cancelOrder(OrderInfo order) {
-		var o = genCancelOrder(order);
+	public void cancelOrder(OrderInfo order, String exchangeID) {
+		var o = genCancelOrder(order, exchangeID);
 		var r = cancelOrder(o);
 		if (r.resultCode == 0) {
 			// 如果返回不是0，表示撤单没有发送成功
@@ -310,11 +310,11 @@ public class TraderCall implements ITrader {
 	}
 
 	// 生成撤单的对象
-	private CThostFtdcInputOrderActionField genCancelOrder(OrderInfo order) {
+	private CThostFtdcInputOrderActionField genCancelOrder(OrderInfo order, String exchangeID) {
 		var action = new CThostFtdcInputOrderActionField();
 		action.setBrokerID(brokerID);
 		action.setInvestorID(investorID);
-		action.setExchangeID(order.orderItem.exchangeID);
+		action.setExchangeID(exchangeID);
 		action.setOrderRef(order.orderRef);
 
 		action.setUserID(investorID);

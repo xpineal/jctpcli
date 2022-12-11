@@ -31,7 +31,7 @@ public class Main {
 		var traderApi = CThostFtdcTraderApi.CreateFtdcTraderApi();
 		// 持仓
 		// 设置合约及交易所 注：暂考虑一个合约
-		var hold = new Hold(instrList[0].getExchangeID(), instrList[0].getInstrumentID());
+		var hold = new Hand();
 		// 下单对象
 		var traderCall = new TraderCall(traderApi, hold.orderTracker,
 				cnf.getBrokerID(), cnf.getAccountID(), cnf.getPassword(), cnf.getAppID(), cnf.getAuthCode());
@@ -55,9 +55,10 @@ public class Main {
 			Thread.sleep(300);
 		}
 
+		Thread.sleep(2000);
 		System.out.println("交易环境初始化完成");
 		// 打印合约
-		hold.instrument.outPut();
+		//hold.instrument.outPut();
 
 		// 行情环境
 		var mdApi = CThostFtdcMdApi.CreateFtdcMdApi();

@@ -63,8 +63,13 @@ public class MdSpi extends CThostFtdcMdSpi {
 		var md = new MarketData(pDepthMarketData);
 		//System.out.println(md.brief());
 
+		if (Parameter.debugMode) {
+			System.out.println("行情信息:");
+			System.out.println(md);
+		}
+
 		if (Parameter.recordMd) {
-			recorder.writeMD(md.brief());
+			recorder.writeMD(md.toString());
 		}
 
 		broker.lock();

@@ -1,95 +1,66 @@
 package org.kcr.jctpcli.core;
 
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
+// 持仓信息 -- 某个方向
 public class Hold {
-    // 可用资金
-    public double available;
+    public int vol = 0; //数量
+    public double price = 0; //实际价格
+    public double marginPrice = 0; //保证金价格
+    public double profile = 0; //利润
+    public double openTotalFee = 0; //开手续费总和
+    public double closeTotalFee = 0; //平手续费总和
 
-    // 订单追踪
-    public OrderTracker orderTracker;
-
-    // 合约
-    public Instrument instrument;
-
-    private Lock lock;
-
-    public Hold(String exchangeID, String instrumentID) {
-        orderTracker = new OrderTracker();
-        instrument = new Instrument(exchangeID, instrumentID);
-        lock = new ReentrantLock();
-    }
-    
-    public void lock() {
-        lock.lock();
+    public Hold() {
+        vol = 0;
+        price = 0;
+        marginPrice = 0;
+        profile = 0;
+        openTotalFee = 0;
+        closeTotalFee = 0;
     }
 
-    public void unlock() {
-        lock.unlock();
+    @Override
+    public String toString() {
+        var sb = new StringBuffer(128);
+        sb.append("数量:").append(vol).append(",");
+        sb.append("价格:").append(price).append(",");
+        sb.append("保证金价格:").append(marginPrice).append(",");
+        sb.append("利润:").append(profile).append(",");
+        sb.append("开手续费:").append(openTotalFee).append(",");
+        sb.append("平手续费:").append(closeTotalFee);
+        return sb.toString();
     }
 
-    public boolean canOpenBuy(Instrument instrument, double price, int volume) {
-        var cost = instrument.openBuyCost(price, volume);
-        return available >= cost;
+    public double totalPrice() {
+        return price * vol;
     }
 
-    public boolean canOpenSell(Instrument instrument, double price, int volume) {
-        return available >= instrument.openSellCost(price, volume);
+    public double totalMargin() {
+        return marginPrice * vol;
     }
 
-    public boolean canCloseBuy(Instrument instrument, int volume) {
-        if (instrument.buyVol < volume) {
-            //持仓数不够
-            return false;
-        }
-        // 检查手续费
-        return available >= instrument.closeFee(volume);
-    }
-
-    public boolean canCloseSell(Instrument instrument, int volume) {
-        if (instrument.sellVol < volume) {
-            //持仓数不够
-            return false;
-        }
-        // 检查手续费
-        return available >= instrument.closeFee(volume);
-    }
-
-    public boolean OnOrderTrade(String orderRef, int volume, double price) {
-        var r = orderTracker.OnOrderTrade(orderRef, volume);
-
-        if (r != null) {
-            var existPrice = r.orderItem.price;
-            r.orderItem.price = price;
-            var retAvailable = instrument.OnOrderTrade(r);
-            switch (r.orderItem.direction){
-                case OpenBuy:
-                    // 做多后可能会有回款
-                    available += instrument.buyMargin(existPrice-price, volume);
-                    break;
-                case OpenSell:
-                    // 做空后可能会有补款
-                    available += instrument.sellMargin(existPrice-price, volume);
-                    break;
-                case CloseBuy:
-                case CloseSell:
-                    // 平后回款
-                    available += retAvailable;
-                    break;
-            }
+    public boolean addVol(int dVol, double dPrice, double dMargin, double openFee) {
+        vol += dVol;
+        openTotalFee += openFee;
+        var totalPrice = totalPrice() + dPrice;
+        var totalMargin = totalMargin() + dMargin;
+        if (vol > 0) {
+            price = totalPrice/vol;
+            marginPrice = totalMargin/vol;
             return true;
         }
         return false;
     }
 
-    public boolean OnOrderCancelled(String orderRef) {
-        var r = orderTracker.OnOrderCancelled(orderRef);
-        if (r != null) {
-            // 撤单成功 -- 把可用金额加回去
-            available += r.orderCancelCost(instrument);
-            return true;
-        }
-        return false;
+    public double reduceVol(int dVol, double dProfile, double openFee, double closeFee) {
+        // 累计平仓手续费
+        closeTotalFee += closeFee;
+        // 计算系统返还的保证金
+        var retMargin = marginPrice * dVol;
+        // 累计利润
+        profile += dProfile - closeFee;
+        // 减少数量
+        vol -= dVol;
+        // 返回可用资金增量 = 返还的保证金+开手续费(手续费计入到价格中了，这里需要加回来)
+        return retMargin + dProfile + openFee;
     }
 }

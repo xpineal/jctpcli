@@ -10,7 +10,7 @@ public interface ITrader {
     // 平空
     public boolean closeSell(Instrument instrument, double price, int volume);
     // 撤单
-    public void cancelOrder(OrderInfo order);
+    public void cancelOrder(OrderInfo order, String exchangeID);
 
     // 认证
     TraderReq authenticate();

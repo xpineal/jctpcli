@@ -21,7 +21,8 @@ public class TradeCmd {
         printInfo = _printInfo;
     }
 
-    public String brief() {
+    @Override
+    public String toString() {
         var sb = new StringBuffer(512);
         if (exeOrders != null) {
             sb.append("to be executed orders:\n");

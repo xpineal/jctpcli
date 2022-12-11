@@ -1,10 +1,6 @@
 package org.kcr.jctpcli.mock;
 
-import org.kcr.jctpcli.core.Instrument;
-import org.kcr.jctpcli.core.OrderInfo;
-import org.kcr.jctpcli.core.OrderTracker;
-import org.kcr.jctpcli.core.ITrader;
-import org.kcr.jctpcli.core.TraderReq;
+import org.kcr.jctpcli.core.*;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -12,7 +8,7 @@ public class MockTrader implements ITrader {
 
     private final AtomicLong orderRefAtom;
     // 订单跟踪
-    private OrderTracker orderTracker;
+    private final OrderTracker orderTracker;
 
     public MockTrader(OrderTracker _orderTracker) {
         orderRefAtom = new AtomicLong(0);
@@ -22,33 +18,33 @@ public class MockTrader implements ITrader {
     @Override
     public boolean openBuy(Instrument instrument, double price, int volume) {
         var orderRef = Long.toString(orderRefAtom.incrementAndGet());
-        orderTracker.OnOpenBuyReq(orderRef, volume, price, instrument.exchangeID, instrument.instrumentID);
+        orderTracker.OnOpenBuyReq(orderRef, new OrderItem(volume, price, instrument.instrumentID));
         return true;
     }
 
     @Override
     public boolean closeBuy(Instrument instrument, double price, int volume) {
         var orderRef = Long.toString(orderRefAtom.incrementAndGet());
-        orderTracker.OnCloseBuyReq(orderRef, volume, price, instrument.exchangeID, instrument.instrumentID);
+        orderTracker.OnCloseBuyReq(orderRef, new OrderItem(volume, price, instrument.instrumentID));
         return true;
     }
 
     @Override
     public boolean openSell(Instrument instrument, double price, int volume) {
         var orderRef = Long.toString(orderRefAtom.incrementAndGet());
-        orderTracker.OnOpenSellReq(orderRef, volume, price, instrument.exchangeID, instrument.instrumentID);
+        orderTracker.OnOpenSellReq(orderRef, new OrderItem(volume, price, instrument.instrumentID));
         return true;
     }
 
     @Override
     public boolean closeSell(Instrument instrument, double price, int volume) {
         var orderRef = Long.toString(orderRefAtom.incrementAndGet());
-        orderTracker.OnCloseSellReq(orderRef, volume, price, instrument.exchangeID, instrument.instrumentID);
+        orderTracker.OnCloseSellReq(orderRef, new OrderItem(volume, price, instrument.instrumentID));
         return true;
     }
 
     @Override
-    public void cancelOrder(OrderInfo order) {
+    public void cancelOrder(OrderInfo order, String exchangeID) {
         orderTracker.OnOrderCancelReq(order.orderRef);
     }
 

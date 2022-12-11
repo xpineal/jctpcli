@@ -5,7 +5,8 @@ public class OrderInfo implements Comparable {
     public String orderRef; //订单编号
     public OrderItem orderItem; //订单内容
 
-    public String ToString() {
+    @Override
+    public String toString() {
         return String.format("订单编号:%s 数量:%d 价格:%f 方向:%d",
                 orderRef, orderItem.volume, orderItem.price, orderItem.direction);
     }
@@ -15,9 +16,9 @@ public class OrderInfo implements Comparable {
         this.orderItem = value;
     }
 
-    public OrderInfo(String orderRef, int vol, double price, String exchangeID, String instrumentID, Direction direct) {
+    public OrderInfo(String orderRef, int vol, double price, String instrumentID, Direction direct) {
         this.orderRef = orderRef;
-        this.orderItem = new OrderItem(vol, price, exchangeID, instrumentID, direct);
+        this.orderItem = new OrderItem(vol, price, instrumentID, direct);
     }
 
     // 订单总价
