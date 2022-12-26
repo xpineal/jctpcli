@@ -4,6 +4,7 @@ package org.kcr.jctpcli.core;
 public class Hold {
     public int vol = 0; //数量
     public double price = 0; //实际价格
+    public double vtPrice = 0; //不计算手续费的价格
     public double marginPrice = 0; //保证金价格
     public double profile = 0; //利润
     public double openTotalFee = 0; //开手续费总和
@@ -12,6 +13,7 @@ public class Hold {
     public Hold() {
         vol = 0;
         price = 0;
+        vtPrice = 0;
         marginPrice = 0;
         profile = 0;
         openTotalFee = 0;
@@ -23,6 +25,7 @@ public class Hold {
         var sb = new StringBuffer(128);
         sb.append("数量:").append(vol).append(",");
         sb.append("价格:").append(price).append(",");
+        sb.append("不含手续费价格:").append(vtPrice).append(",");
         sb.append("保证金价格:").append(marginPrice).append(",");
         sb.append("利润:").append(profile).append(",");
         sb.append("开手续费:").append(openTotalFee).append(",");
@@ -30,21 +33,31 @@ public class Hold {
         return sb.toString();
     }
 
+    // 总价格
     public double totalPrice() {
         return price * vol;
+    }
+
+    // 不含手续费的总价格
+    public double totalVtPrice() {
+        return vtPrice * vol;
     }
 
     public double totalMargin() {
         return marginPrice * vol;
     }
 
-    public boolean addVol(int dVol, double dPrice, double dMargin, double openFee) {
+    // orderPrice -- 订单总价格
+    // feePrice -- 手续费价格
+    public boolean addVol(int dVol, double orderPrice, double feePrice, double dMargin, double openFee) {
         vol += dVol;
         openTotalFee += openFee;
-        var totalPrice = totalPrice() + dPrice;
+        var totalPrice = totalPrice() + orderPrice + feePrice;
+        var totalVtPrice = totalVtPrice() + orderPrice;
         var totalMargin = totalMargin() + dMargin;
         if (vol > 0) {
             price = totalPrice/vol;
+            vtPrice = totalVtPrice/vol;
             marginPrice = totalMargin/vol;
             return true;
         }

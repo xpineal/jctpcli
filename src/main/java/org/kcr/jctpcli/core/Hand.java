@@ -37,24 +37,20 @@ public class Hand {
         instrumentHash.putIfAbsent(instrument.instrumentID, instrument);
     }
 
-    public void upsertInstrument(CThostFtdcInstrumentField pInstrument) {
-        upsertInstrument(pInstrument, false);
-    }
-
     public void upsertInstrument(InstrInfo pInstrument) {
         var instrument = instrumentHash.get(pInstrument.instrumentID);
         if (instrument == null) {
-            instrument = new Instrument(pInstrument.exchangeID, pInstrument.instrumentID, false);
+            instrument = new Instrument(pInstrument.exchangeID, pInstrument.instrumentID);
             instrumentHash.put(pInstrument.instrumentID, instrument);
         }
         instrument.setInstrumentRatio(pInstrument);
     }
 
-    public void upsertInstrument(CThostFtdcInstrumentField pInstrument, boolean closeToday) {
+    public void upsertInstrument(CThostFtdcInstrumentField pInstrument) {
         var instrID = pInstrument.getInstrumentID();
         var instrument = instrumentHash.get(instrID);
         if (instrument == null) {
-            instrument = new Instrument(pInstrument.getExchangeID(), instrID, closeToday);
+            instrument = new Instrument(pInstrument.getExchangeID(), instrID);
             instrumentHash.put(instrID, instrument);
         }
         instrument.setInstrumentRatio(pInstrument);
@@ -76,30 +72,30 @@ public class Hand {
     }
 
     public boolean canOpenBuy(Instrument instrument, OrderItem order) {
-        var cost = instrument.openBuyCost(order.price, order.volume);
+        var cost = instrument.openBuyCost(order);
         return available >= cost;
     }
 
     public boolean canOpenSell(Instrument instrument, OrderItem order) {
-        return available >= instrument.openSellCost(order.price, order.volume);
+        return available >= instrument.openSellCost(order);
     }
 
-    public boolean canCloseBuy(Instrument instrument, int volume) {
-        if (instrument.buyHold.vol < volume) {
+    public boolean canCloseBuy(Instrument instrument, OrderItem order) {
+        if (instrument.buyHold.vol < order.volume) {
             //持仓数不够
             return false;
         }
         // 检查手续费
-        return available >= instrument.closeFee(volume);
+        return available >= instrument.closeFee(order);
     }
 
-    public boolean canCloseSell(Instrument instrument, int volume) {
-        if (instrument.sellHold.vol < volume) {
+    public boolean canCloseSell(Instrument instrument, OrderItem order) {
+        if (instrument.sellHold.vol < order.volume) {
             //持仓数不够
             return false;
         }
         // 检查手续费
-        return available >= instrument.closeFee(volume);
+        return available >= instrument.closeFee(order);
     }
 
     public boolean OnOrderTrade(String orderRef, int volume, double price) {

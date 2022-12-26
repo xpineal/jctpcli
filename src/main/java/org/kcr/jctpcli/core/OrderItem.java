@@ -38,12 +38,12 @@ public class OrderItem {
     public double orderCancelCost(Instrument instrument) {
         switch (direction) {
             case OpenBuy:
-                return instrument.openBuyCost(price, volume);
+                return instrument.openBuyCost(this);
             case OpenSell:
-                return instrument.openSellCost(price, volume);
+                return instrument.openSellCost(this);
             case CloseBuy:
             case CloseSell:
-                return instrument.closeFee(volume);
+                return instrument.closeFee(this);
         }
         return 0;
     }

@@ -30,7 +30,7 @@ public class Broker {
     public ExeRet executeOpenBuy(Instrument instrument, OrderItem order) {
         if (hand.canOpenBuy(instrument, order)) {
             if (traderCall.openBuy(instrument, order.price, order.volume)) {
-                hand.available -= instrument.openBuyCost(order.price, order.volume);
+                hand.available -= instrument.openBuyCost(order);
                 return ExeRet.OK;
             }
             return ExeRet.Fail;
@@ -47,7 +47,7 @@ public class Broker {
     public ExeRet executeOpenSell(Instrument instrument, OrderItem order) {
         if (hand.canOpenSell(instrument, order)) {
             if (traderCall.openSell(instrument, order.price, order.volume)) {
-                hand.available -= instrument.openSellCost(order.price, order.volume);
+                hand.available -= instrument.openSellCost(order);
                 return ExeRet.OK;
             }
             return ExeRet.Fail;
@@ -62,9 +62,9 @@ public class Broker {
 
     // 执行平多
     public ExeRet executeCloseBuy(Instrument instrument, OrderItem order) {
-        if (hand.canCloseBuy(instrument, order.volume)) {
+        if (hand.canCloseBuy(instrument, order)) {
             if (traderCall.closeBuy(instrument, order.price, order.volume)) {
-                hand.available -= instrument.closeFee(order.volume);
+                hand.available -= instrument.closeFee(order);
                 return ExeRet.OK;
             }
             return ExeRet.Fail;
@@ -78,9 +78,9 @@ public class Broker {
     }
 
     public ExeRet executeCloseSell(Instrument instrument, OrderItem order) {
-        if (hand.canCloseSell(instrument, order.volume)) {
+        if (hand.canCloseSell(instrument, order)) {
             if (traderCall.closeSell(instrument, order.price, order.volume)) {
-                hand.available -= instrument.closeFee(order.volume);
+                hand.available -= instrument.closeFee(order);
                 return ExeRet.OK;
             }
             return ExeRet.Fail;

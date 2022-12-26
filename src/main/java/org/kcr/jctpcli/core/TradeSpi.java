@@ -301,16 +301,16 @@ public class TradeSpi extends CThostFtdcTraderSpi {
 			switch (dir) {
 				case OpenBuy:
 					hand.orderTracker.OnOpenBuyReq(orderRef, orderItem);
-					hand.available -= instrument.openBuyCost(orderItem.price, orderItem.volume);
+					hand.available -= instrument.openBuyCost(orderItem);
 				case OpenSell:
 					hand.orderTracker.OnOpenSellReq(orderRef, orderItem);
-					hand.available -= instrument.openSellCost(orderItem.price, orderItem.volume);
+					hand.available -= instrument.openSellCost(orderItem);
 				case CloseBuy:
 					hand.orderTracker.OnCloseBuyReq(orderRef, orderItem);
-					hand.available -= instrument.closeFee(orderItem.volume);
+					hand.available -= instrument.closeFee(orderItem);
 				case CloseSell:
 					hand.orderTracker.OnCloseSellReq(orderRef, orderItem);
-					hand.available -= instrument.closeFee(orderItem.volume);
+					hand.available -= instrument.closeFee(orderItem);
 			}
 		}
 

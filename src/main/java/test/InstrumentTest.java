@@ -13,9 +13,9 @@ class InstrumentTest {
 
     @BeforeAll
     static void init() {
-        instrument.openRatioByMoney = 100;
+        instrument.openRatioByMoney = 0.001;
         instrument.openRatioByVolume = 1;
-        instrument.closeRatioByMoney = 200;
+        instrument.closeRatioByMoney = 0.001;
         instrument.closeRatioByVolume = 2;
         instrument.closeTodayRatioByMoney = 400;
         instrument.closeTodayRatioByVolume = 4;
@@ -235,6 +235,6 @@ class InstrumentTest {
 
     private void outCloseFee(double price, int volume) {
         System.out.println(
-                String.format("price:%f, volume:%d, close fee:%f", price, volume, instrument.closeFee(volume)));
+                String.format("price:%f, volume:%d, close fee:%f", price, volume, instrument.closeFee(price, volume)));
     }
 }
