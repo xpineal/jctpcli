@@ -64,6 +64,17 @@ public class Hand {
         return instrumentHash.get(instrumentID);
     }
 
+    public Instrument getInstrumentWithLock(String instrumentID) {
+        Instrument outInst = null;
+        try {
+            lock();
+            outInst = instrumentHash.get(instrumentID);
+        }finally {
+            unlock();
+        }
+        return outInst;
+    }
+
     public boolean canOpenBuy(Instrument instrument, OrderItem order) {
         var cost = instrument.openBuyCost(order.price, order.volume);
         return available >= cost;

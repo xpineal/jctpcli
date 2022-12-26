@@ -95,6 +95,25 @@ public class Instrument {
         priceTick = pInstrument.priceTick;
     }
 
+    public void setOpenCloseRatio(CThostFtdcInstrumentCommissionRateField tc) {
+        var openRatioByVol = tc.getOpenRatioByVolume();
+        var openRatioByMo = tc.getOpenRatioByMoney();
+        var closeRatioByVol = tc.getCloseRatioByVolume();
+        var closeRatioByMo = tc.getCloseRatioByMoney();
+        if (openRatioByVol > 0) {
+            openRatioByVolume = openRatioByVol;
+        }
+        if (openRatioByMo > 0) {
+            openRatioByMoney = openRatioByMo;
+        }
+        if (closeRatioByVol > 0) {
+            closeRatioByVolume = closeRatioByVol;
+        }
+        if (closeRatioByMo > 0) {
+            closeRatioByMoney = closeRatioByMo;
+        }
+    }
+
     // 查询手续费及率
     /*public void setRatio(CThostFtdcInstrumentCommissionRateField tc) {
         // 开仓手续费率

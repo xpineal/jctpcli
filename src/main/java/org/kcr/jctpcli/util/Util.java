@@ -16,4 +16,18 @@ public class Util {
 
         return false;
     }
+
+    public static void sleepMs(long ms) {
+        try {
+            System.out.println("等待");
+            Thread.sleep(ms);
+            System.out.println("开始");
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void sleepAvoidTooFreq() {
+        sleepMs(1100);
+    }
 }

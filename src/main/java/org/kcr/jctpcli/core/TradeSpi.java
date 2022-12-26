@@ -1,6 +1,7 @@
 package org.kcr.jctpcli.core;
 
 import org.kcr.jctpcli.util.Output;
+import org.kcr.jctpcli.util.Util;
 import org.kr.jctp.*;
 
 public class TradeSpi extends CThostFtdcTraderSpi {
@@ -75,6 +76,7 @@ public class TradeSpi extends CThostFtdcTraderSpi {
 			}
 			Parameter.tradingDay = traderCall.getTradingDay();
 			fence.doneLogin();
+			Util.sleepAvoidTooFreq();
 			System.out.println("start to query account --------------");
 			traderCall.queryTradeAccount("");
 			//setupParameterAfterLogin();	
@@ -139,6 +141,7 @@ public class TradeSpi extends CThostFtdcTraderSpi {
 			if (Parameter.debugMode) {
 				Output.pTradingAccount("请求查询资金账户响应", pTradingAccount);
 			}
+			Util.sleepAvoidTooFreq();
 			System.out.println("开始查询持仓 --------------");
 			traderCall.queryInvestorPosition("");
 		}
@@ -170,6 +173,7 @@ public class TradeSpi extends CThostFtdcTraderSpi {
 		var size = ins.length;
 		for (int i = 0; i < size; i++) {
 			var instrumentID = ins[i].getInstrumentID();
+			Util.sleepAvoidTooFreq();
 			var r = traderCall.queryInstrument(instrumentID, ins[i].getExchangeID());
 			if (r.resultCode != 0) {
 				System.out.printf("query instrument %s error code:%d\n", instrumentID, r.resultCode);
@@ -249,7 +253,7 @@ public class TradeSpi extends CThostFtdcTraderSpi {
 			// TODO 后续可以做一个序号跟踪保证可重入
 			onRecall(pOrder);
 		}else {
-
+			onRtnOrder(pOrder);
 		}
 
 		if (Parameter.debugMode) {
@@ -272,17 +276,44 @@ public class TradeSpi extends CThostFtdcTraderSpi {
 	private void onRtnOrder(CThostFtdcOrderField pOrder) {
 		hand.lock();
 		try {
-
+			catchManualOrder(pOrder);
 		}catch (Exception e) {
-
+			e.printStackTrace();
 		}finally {
-
+			hand.unlock();
 		}
 	}
 
-	private void handleEscape(CThostFtdcOrderField pOrder) {
+	// 捕捉手动订单
+	private void catchManualOrder(CThostFtdcOrderField pOrder) {
 		var orderRef = pOrder.getOrderRef();
+		var order = hand.orderTracker.getOrder(orderRef);
 		var instrumentID = pOrder.getInstrumentID();
+		if (order == null) {
+			//手动订单，原来的记录中没有此记录
+			var instrument = hand.getInstrument(instrumentID);
+			if (instrument == null) {
+				System.out.printf("出现了没有合约信息的订单:%s - %s\n", instrumentID, orderRef);
+				return;
+			}
+			var dir = figureDirection(pOrder);
+			var orderItem = new OrderItem(pOrder.getVolumeTotalOriginal(), pOrder.getLimitPrice(), instrumentID);
+			switch (dir) {
+				case OpenBuy:
+					hand.orderTracker.OnOpenBuyReq(orderRef, orderItem);
+					hand.available -= instrument.openBuyCost(orderItem.price, orderItem.volume);
+				case OpenSell:
+					hand.orderTracker.OnOpenSellReq(orderRef, orderItem);
+					hand.available -= instrument.openSellCost(orderItem.price, orderItem.volume);
+				case CloseBuy:
+					hand.orderTracker.OnCloseBuyReq(orderRef, orderItem);
+					hand.available -= instrument.closeFee(orderItem.volume);
+				case CloseSell:
+					hand.orderTracker.OnCloseSellReq(orderRef, orderItem);
+					hand.available -= instrument.closeFee(orderItem.volume);
+			}
+		}
+
 		var exchangeID = pOrder.getExchangeID();
 		var dir = pOrder.getDirection();
 		var offsetFlag = pOrder.getCombOffsetFlag();
@@ -292,7 +323,21 @@ public class TradeSpi extends CThostFtdcTraderSpi {
 	private Direction figureDirection(CThostFtdcOrderField pOrder) {
 		var dir = pOrder.getDirection();
 		var offsetFlag = pOrder.getCombOffsetFlag();
-		// if (dir == jctpConstants.THOST_FTDC_D_Buy && )
+
+		if (offsetFlag.equals(TraderCall.open) && dir == jctpConstants.THOST_FTDC_D_Buy) {
+			return Direction.OpenBuy;
+		}
+		if (offsetFlag.equals(TraderCall.open) && dir == jctpConstants.THOST_FTDC_D_Sell) {
+			return Direction.OpenSell;
+		}
+		if (offsetFlag.equals(TraderCall.close) || offsetFlag.equals(TraderCall.closeToday)) {
+			if (dir == jctpConstants.THOST_FTDC_D_Buy) {
+				return Direction.CloseBuy;
+			}
+			if (dir == jctpConstants.THOST_FTDC_D_Sell) {
+				return Direction.CloseSell;
+			}
+		}
 		return Direction.None;
 	}
 
@@ -409,6 +454,19 @@ public class TradeSpi extends CThostFtdcTraderSpi {
 			}
 		}
 
+		if (bIsLast) {
+			fence.doneInstrument();
+
+			var existInst = hand.getInstrumentWithLock(pInstrument.getInstrumentID());
+			if (existInst == null) {
+				System.out.println("get instrument but it's null");
+				return;
+			}
+			Util.sleepAvoidTooFreq();
+			System.out.println("start to query commission rate --------------");
+			traderCall.queryInstrumentCommissionRate(existInst);
+		}
+
 		/*if (bIsLast) {
 			// 查询手续费
 			// System.out.println("start to query commission rate --------------");
@@ -434,7 +492,7 @@ public class TradeSpi extends CThostFtdcTraderSpi {
 	}
 
 	// 请求查询合约手续费率响应
-	/*@Override
+	@Override
 	public void OnRspQryInstrumentCommissionRate(CThostFtdcInstrumentCommissionRateField pInstrumentCommissionRate,
 			CThostFtdcRspInfoField pRspInfo, int nRequestID, boolean bIsLast) {
 		if (Output.pResponse("请求查询合约手续费率响应", pRspInfo, nRequestID, bIsLast)) {
@@ -444,14 +502,25 @@ public class TradeSpi extends CThostFtdcTraderSpi {
 			System.out.println("请求查询合约手续费率响应返回信息为空");
 			return;
 		}
+
 		// 查询手续费及率
-		hand.instrument.setRatio(pInstrumentCommissionRate);
+		try {
+			hand.lock();
+			var existInst = hand.getInstrument(pInstrumentCommissionRate.getInstrumentID());
+			if (existInst == null) {
+				System.out.println("get instrument in query commission rate but it's null");
+				return;
+			}
+			existInst.setOpenCloseRatio(pInstrumentCommissionRate);
+		}finally {
+			hand.unlock();
+		}
 		fence.doneCommissionRate();
 
 		if (Parameter.debugMode) {
 			Output.pInstrumentCommissionRate("请求查询合约手续费率响应", pInstrumentCommissionRate);
 		}
-	}*/
+	}
 
 	// 设置登录后相关参数
 	/*private void setupParameterAfterLogin() {

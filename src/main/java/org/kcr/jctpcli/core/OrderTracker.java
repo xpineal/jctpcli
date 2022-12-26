@@ -12,6 +12,10 @@ public class OrderTracker {
         orderTrackHash = new HashMap<>();
     }
 
+    public OrderItem getOrder(String orderRef) {
+        return orderTrackHash.get(orderRef);
+    }
+
     // 提交开多单后调用以便跟踪订单
     public void OnOpenBuyReq(String orderRef, OrderItem order) {
         addOrder(orderRef, order, Direction.OpenBuy);

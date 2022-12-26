@@ -9,9 +9,9 @@ import java.util.concurrent.atomic.AtomicLong;
 public class TraderCall implements ITrader {
 	// flag
 	// 开平标记 THOST_FTDC_OF_CloseToday
-	private static final String open = Character.toString(jctpConstants.THOST_FTDC_OF_Open);
-	private static final String close = Character.toString(jctpConstants.THOST_FTDC_OF_Close);
-	private static final String closeToday = Character.toString(jctpConstants.THOST_FTDC_OF_CloseToday);
+	public static final String open = Character.toString(jctpConstants.THOST_FTDC_OF_Open);
+	public static final String close = Character.toString(jctpConstants.THOST_FTDC_OF_Close);
+	public static final String closeToday = Character.toString(jctpConstants.THOST_FTDC_OF_CloseToday);
 	// 投机标记 -- 暂时只用投机标记
 	private static final String HFSpeculation = Character.toString(jctpConstants.THOST_FTDC_HF_Speculation);
 
