@@ -23,14 +23,16 @@ class BrokerTest {
 
     private static void initHold() {
         var ins = new CnfInstrument[1];
-        ins[0] = new CnfInstrument("instrumentID", "exchangeID");
+        ins[0] = new CnfInstrument("v2301", "DCE");
         Parameter.cnf = new Cnf("tradeSrv", "mdSrv",
                 "brokerID", "accountID", "password", "appID", "authCode",
-                0.07, 1, 1, ins);
+                0.03, 1, 1, ins);
         Parameter.cnf.refresh();
 
         var pInstrument = new InstrInfo("exchangeID", "instrumentID",
                 0.11, 0.11, 0.1, 5);
+        pInstrument.openRatioByVolume = 1;
+        pInstrument.closeRatioByVolume = 1;
         hand.upsertInstrument(pInstrument);
 
         // 初始资金5000
@@ -40,7 +42,7 @@ class BrokerTest {
     @Test
     void executeOpenBuy1() {
         var instrument = hand.getInstrument("instrumentID");
-        printExeRet(broker.executeOpenBuy(instrument, new OrderItem(1, 100, instrument.instrumentID)));
+        printExeRet(broker.executeOpenBuy(instrument, new OrderItem(1, 6000, instrument.instrumentID)));
         printHold("open buy");
         broker.hand.OnOrderCancelled("1");
         printHold("cancel open buy");
@@ -50,29 +52,29 @@ class BrokerTest {
     @Test
     void executeOpenBuy2() {
         var instrument = hand.getInstrument("instrumentID");
-        printExeRet(broker.executeOpenBuy(instrument, 1, 100));
+        printExeRet(broker.executeOpenBuy(instrument, 1, 6000));
         printHold("open buy");
-        broker.hand.OnOrderTrade("1", 1, 100);
+        broker.hand.OnOrderTrade("1", 1, 6000);
         printHold("done buy");
     }
 
     @Test
     void executeOpenBuy3() {
         var instrument = hand.getInstrument("instrumentID");
-        printExeRet(broker.executeOpenBuy(instrument, new OrderItem(1, 100, instrument.instrumentID)));
+        printExeRet(broker.executeOpenBuy(instrument, new OrderItem(1, 6100, instrument.instrumentID)));
         printHold("open buy");
-        broker.hand.OnOrderTrade("1", 1, 90);
+        broker.hand.OnOrderTrade("1", 1, 6000);
         printHold("done buy");
     }
 
     @Test
     void executeOpenBuy4() {
         var instrument = hand.getInstrument("instrumentID");
-        printExeRet(broker.executeOpenBuy(instrument, 2, 100));
+        printExeRet(broker.executeOpenBuy(instrument, 2, 6100));
         printHold("open buy");
-        broker.hand.OnOrderTrade("1", 1, 90);
+        broker.hand.OnOrderTrade("1", 1, 6000);
         printHold("done buy1");
-        broker.hand.OnOrderTrade("1", 1, 100);
+        broker.hand.OnOrderTrade("1", 1, 6100);
         printHold("done buy2");
     }
 
@@ -90,7 +92,7 @@ class BrokerTest {
     @Test
     void executeOpenSell1() {
         var instrument = hand.getInstrument("instrumentID");
-        printExeRet(broker.executeOpenSell(instrument, new OrderItem(1, 100, instrument.instrumentID)));
+        printExeRet(broker.executeOpenSell(instrument, new OrderItem(1, 6000, instrument.instrumentID)));
         printHold("open sell");
         broker.hand.OnOrderCancelled("1");
         printHold("cancel open sell");
@@ -99,29 +101,29 @@ class BrokerTest {
     @Test
     void executeOpenSell2() {
         var instrument = hand.getInstrument("instrumentID");
-        printExeRet(broker.executeOpenSell(instrument, new OrderItem(1, 100, instrument.instrumentID)));
+        printExeRet(broker.executeOpenSell(instrument, new OrderItem(1, 6000, instrument.instrumentID)));
         printHold("open sell");
-        broker.hand.OnOrderTrade("1", 1, 100);
+        broker.hand.OnOrderTrade("1", 1, 6000);
         printHold("done sell");
     }
 
     @Test
     void executeOpenSell3() {
         var instrument = hand.getInstrument("instrumentID");
-        printExeRet(broker.executeOpenSell(instrument, new OrderItem(1, 100, instrument.instrumentID)));
+        printExeRet(broker.executeOpenSell(instrument, new OrderItem(1, 6000, instrument.instrumentID)));
         printHold("open sell");
-        broker.hand.OnOrderTrade("1", 1, 110);
+        broker.hand.OnOrderTrade("1", 1, 6100);
         printHold("done sell");
     }
 
     @Test
     void executeOpenSell4() {
         var instrument = hand.getInstrument("instrumentID");
-        printExeRet(broker.executeOpenSell(instrument, 2, 100));
+        printExeRet(broker.executeOpenSell(instrument, 2, 6000));
         printHold("open sell");
-        broker.hand.OnOrderTrade("1", 1, 110);
+        broker.hand.OnOrderTrade("1", 1, 6100);
         printHold("done sell1");
-        broker.hand.OnOrderTrade("1", 1, 100);
+        broker.hand.OnOrderTrade("1", 1, 6000);
         printHold("done sell2");
     }
 
@@ -139,21 +141,21 @@ class BrokerTest {
     @Test
     void executeCloseBuy1() {
         var instrument = hand.getInstrument("instrumentID");
-        printExeRet(broker.executeOpenBuy(instrument, 1, 100));
+        printExeRet(broker.executeOpenBuy(instrument, 1, 6000));
         //printHold("open buy", broker.hold);
-        broker.hand.OnOrderTrade("1", 1, 100);
+        broker.hand.OnOrderTrade("1", 1, 6000);
         printHold("done buy");
 
-        printExeRet(broker.executeCloseBuy(instrument, new OrderItem(1, 110, instrument.instrumentID)));
-        //printHold("close buy", broker.hold);
-        broker.hand.OnOrderTrade("2", 1, 110);
+        printExeRet(broker.executeCloseBuy(instrument, new OrderItem(1, 6100, instrument.instrumentID)));
+        printHold("close buy");
+        broker.hand.OnOrderTrade("2", 1, 6100);
         printHold("done close");
         assertEquals(delta(), 500000);
     }
 
     @Test
     void executeCloseBuy11() {
-        executeCloseBuy1x(90);
+        executeCloseBuy1x(6000);
     }
 
     @Test
@@ -163,12 +165,12 @@ class BrokerTest {
 
     void executeCloseBuy1x(double price) {
         var instrument = hand.getInstrument("instrumentID");
-        printExeRet(broker.executeOpenBuy(instrument, new OrderItem(1, 100, instrument.instrumentID)));
+        printExeRet(broker.executeOpenBuy(instrument, new OrderItem(1, 6100, instrument.instrumentID)));
         //printHold("open buy", broker.hold);
-        broker.hand.OnOrderTrade("1", 1, 100);
+        broker.hand.OnOrderTrade("1", 1, 6100);
         printHold("done buy");
 
-        printExeRet(broker.executeCloseBuy(instrument, new OrderItem(1, 90, instrument.instrumentID)));
+        printExeRet(broker.executeCloseBuy(instrument, new OrderItem(1, price, instrument.instrumentID)));
         printHold("close buy");
         broker.hand.OnOrderTrade("2", 1, price);
         printHold("done close");
@@ -225,14 +227,14 @@ class BrokerTest {
     @Test
     void executeCloseSell1() {
         var instrument = hand.getInstrument("instrumentID");
-        printExeRet(broker.executeOpenSell(instrument, new OrderItem(1, 100, instrument.instrumentID)));
+        printExeRet(broker.executeOpenSell(instrument, new OrderItem(1, 6000, instrument.instrumentID)));
         printHold("open sell");
-        broker.hand.OnOrderTrade("1", 1, 100);
+        broker.hand.OnOrderTrade("1", 1, 6000);
         printHold("done sell");
 
-        printExeRet(broker.executeCloseSell(instrument, 1, 90));
+        printExeRet(broker.executeCloseSell(instrument, 1, 6100));
         printHold("close sell");
-        broker.hand.OnOrderTrade("2", 1, 90);
+        broker.hand.OnOrderTrade("2", 1, 6100);
         printHold("done close sell");
         assertEquals(delta(), 500000);
     }
@@ -240,14 +242,14 @@ class BrokerTest {
     @Test
     void executeCloseSell12() {
         var instrument = hand.getInstrument("instrumentID");
-        printExeRet(broker.executeOpenSell(instrument, 1, 100));
+        printExeRet(broker.executeOpenSell(instrument, 1, 6100));
         printHold("open sell");
-        broker.hand.OnOrderTrade("1", 1, 100);
+        broker.hand.OnOrderTrade("1", 1, 6100);
         printHold("done sell");
 
-        printExeRet(broker.executeCloseSell(instrument, 1, 120));
+        printExeRet(broker.executeCloseSell(instrument, 1, 6000));
         printHold("close sell");
-        broker.hand.OnOrderTrade("2", 1, 110);
+        broker.hand.OnOrderTrade("2", 1, 6000);
         printHold("done close sell");
         assertEquals(delta(), 500000);
     }
@@ -302,7 +304,7 @@ class BrokerTest {
             System.out.println(e);
             return 0;
         }finally {
-            System.out.println("finally out");
+            System.out.printf("finally out:%d\n", divide);
         }
     }
 
@@ -310,6 +312,7 @@ class BrokerTest {
         var instrument = hand.getInstrument("instrumentID");
         System.out.println(_title);
         System.out.printf("available:%f\n", hand.available);
+        System.out.printf("use money:%f\n", 500000-hand.available);
         System.out.println("hold info:");
         System.out.print("delta:");
         System.out.println(delta());

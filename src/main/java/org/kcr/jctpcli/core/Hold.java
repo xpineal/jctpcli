@@ -1,5 +1,7 @@
 package org.kcr.jctpcli.core;
 
+import org.kr.jctp.CThostFtdcInvestorPositionField;
+
 // 持仓信息 -- 某个方向
 public class Hold {
     public int vol = 0; //数量
@@ -47,14 +49,30 @@ public class Hold {
         return marginPrice * vol;
     }
 
+    public void feed(Instrument instrument, CThostFtdcInvestorPositionField pInvestorPosition, boolean openBuy) {
+        var openVol = pInvestorPosition.getPosition();
+        if (openVol > 0) {
+            vol += openVol;
+            vtPrice = pInvestorPosition.getOpenCost()/(vol*instrument.volumeMultiple);
+            price = vtPrice + instrument.openFeePrice(vtPrice, 1);
+            if (openBuy) {
+                marginPrice = instrument.buyMargin(vtPrice, 1);
+            }else {
+                marginPrice = instrument.sellMargin(vtPrice, 1);
+            }
+
+            openTotalFee += instrument.openFee(vtPrice, vol);
+        }
+    }
+
     // orderPrice -- 订单总价格
     // feePrice -- 手续费价格
     public boolean addVol(int dVol, double orderPrice, double feePrice, double dMargin, double openFee) {
-        vol += dVol;
-        openTotalFee += openFee;
         var totalPrice = totalPrice() + orderPrice + feePrice;
         var totalVtPrice = totalVtPrice() + orderPrice;
         var totalMargin = totalMargin() + dMargin;
+        vol += dVol;
+        openTotalFee += openFee;
         if (vol > 0) {
             price = totalPrice/vol;
             vtPrice = totalVtPrice/vol;

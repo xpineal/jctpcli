@@ -44,6 +44,7 @@ public class Hand {
             instrumentHash.put(pInstrument.instrumentID, instrument);
         }
         instrument.setInstrumentRatio(pInstrument);
+        instrument.setOpenCloseRatio(pInstrument);
     }
 
     public void upsertInstrument(CThostFtdcInstrumentField pInstrument) {

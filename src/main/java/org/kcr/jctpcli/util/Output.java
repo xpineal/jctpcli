@@ -16,7 +16,7 @@ public class Output {
 					rsp.getErrorID(), rID);
 			return true;
 		}
-		System.out.printf("%s -- request id:%d, is last:%b\n", head, rID, bLast);
+		//System.out.printf("%s -- request id:%d, is last:%b\n", head, rID, bLast);
 		return false;
 	}
 

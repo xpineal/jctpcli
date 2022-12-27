@@ -89,9 +89,9 @@ public class OrderTracker {
         orderTrackHash.forEach((key, value)->{
             sb.append("order ref:").append(key).append(",");
             sb.append("direction:").append(value.direction).append(",");
-            sb.append("price:").append(value.volume).append(",");
-            sb.append("state:").append(value.price).append(",");
-            sb.append("direction:").append(value.state).append("\n");
+            sb.append("volume:").append(value.volume).append(",");
+            sb.append("price:").append(value.price).append(",");
+            sb.append("state:").append(value.state).append("\n");
         });
         sb.append("]");
         return sb.toString();

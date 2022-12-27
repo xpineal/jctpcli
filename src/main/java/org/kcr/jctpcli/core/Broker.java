@@ -119,6 +119,10 @@ public class Broker {
         if (cmd.printInfo) {
             //只做打印
             System.out.printf("可用资金:%f", hand.available);
+            System.out.println("合约持仓信息 ---------- :");
+            System.out.println(instrument);
+            System.out.println("订单信息 ----------- :");
+            System.out.println(hand.orderTracker.allOrdersToString());
             return;
         }
 

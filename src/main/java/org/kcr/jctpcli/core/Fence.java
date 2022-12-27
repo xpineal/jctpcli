@@ -14,12 +14,16 @@ public class Fence {
 	// 手续费
 	private AtomicBoolean bCommissionRate;
 
+	// 持仓信息
+	private AtomicBoolean bInvestorPosition;
+
 	// 构造函数
 	public Fence() {
 		this.bLogin = new AtomicBoolean();
 		this.bAccount = new AtomicBoolean();
 		this.bInstrument = new AtomicBoolean();
 		this.bCommissionRate = new AtomicBoolean();
+		this.bInvestorPosition = new AtomicBoolean();
 	}
 
 	// 是否已经完成登录
@@ -55,7 +59,15 @@ public class Fence {
 		bCommissionRate.set(true);
 	}
 
+	public boolean hasInvestorPosition() {
+		return bInvestorPosition.get();
+	}
+
+	public void doneInvestorPosition() {
+		this.bInvestorPosition.set(true);
+	}
+
 	public boolean ready() {
-		return hasLogin() && hasAccount() && hasInstrument() && hasCommissionRate();
+		return hasLogin() && hasAccount() && hasInstrument() && hasCommissionRate() && hasInvestorPosition();
 	}
 }

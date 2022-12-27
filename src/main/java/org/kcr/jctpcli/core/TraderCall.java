@@ -42,7 +42,8 @@ public class TraderCall implements ITrader {
 		appID = _appID;
 		authCode = _authCode;
 
-		reqIDAtom = new AtomicInteger(0);
+		var refID = System.currentTimeMillis()/1000;
+		reqIDAtom = new AtomicInteger((int)refID);
 		frontIDAtom = new AtomicInteger();
 		sessionIDAtom = new AtomicInteger();
 		orderRefAtom = new AtomicLong();
@@ -52,7 +53,12 @@ public class TraderCall implements ITrader {
 	public void setAtom(int frontID, int sessionID, long orderRef) {
 		frontIDAtom.set(frontID);
 		sessionIDAtom.set(sessionID);
-		orderRefAtom.set(orderRef);
+		var setOrderRef = System.currentTimeMillis()/1000 + orderRef;
+		orderRefAtom.set(setOrderRef);
+		if (Parameter.debugMode) {
+			System.out.printf("客户端相关会话信息 frontID:%d, sessionID:%d, orderRef:%d setOrderRef:%d\n",
+					frontID, sessionID, orderRef, setOrderRef);
+		}
 	}
 
 	// 认证
@@ -247,8 +253,9 @@ public class TraderCall implements ITrader {
 	private CThostFtdcInputOrderField genOrder(
 			Instrument instrument, double price, int vol, boolean isBuy, boolean isOpen, char type) {
 		var order = new CThostFtdcInputOrderField();
-		var orderRef = Parameter.orderRefPrefix +orderRefAtom.incrementAndGet();
-		//var orderRef = Long.toString(orderRefAtom.incrementAndGet());
+		var orderRefID = orderRefAtom.incrementAndGet();
+		//var orderRef = Parameter.orderRefPrefix + orderRefID;
+		var orderRef = Long.toString(orderRefID);
 		order.setBrokerID(brokerID); //broker id
 		order.setInvestorID(investorID); //investor id
 		order.setInstrumentID(instrument.instrumentID); //合约id
@@ -266,7 +273,7 @@ public class TraderCall implements ITrader {
 		if (isOpen) {
 			order.setCombOffsetFlag(open);
 		}else {
-			if (instrument.closeToday) {
+			if (instrument.closeTodayRatioByMoney > 0 || instrument.closeTodayRatioByVolume > 0) {
 				order.setCombOffsetFlag(closeToday);
 			}else{
 				order.setCombOffsetFlag(close);
@@ -295,7 +302,11 @@ public class TraderCall implements ITrader {
 
 	// 撤单
 	private OrderReq cancelOrder(CThostFtdcInputOrderActionField order) {
-		var r = new OrderReq(reqIDAtom.getAndIncrement(), order.getOrderRef());
+		var reqID = reqIDAtom.getAndIncrement();
+		if (Parameter.debugMode) {
+			System.out.printf("撤单编号:%d -- 报单引用:%s\n", reqID, order.getOrderRef());
+		}
+		var r = new OrderReq(reqID, order.getOrderRef());
 		order.setOrderActionRef(r.requestID);
 		r.resultCode = traderApi.ReqOrderAction(order, r.requestID);
 		return r;
@@ -303,7 +314,11 @@ public class TraderCall implements ITrader {
 
 	// 报单
 	private OrderReq addOrder(CThostFtdcInputOrderField order) {
-		var r = new OrderReq(reqIDAtom.getAndIncrement(), order.getOrderRef());
+		var reqID = reqIDAtom.getAndIncrement();
+		if (Parameter.debugMode) {
+			System.out.printf("报单编号:%d -- 报单引用:%s\n", reqID, order.getOrderRef());
+		}
+		var r = new OrderReq(reqID, order.getOrderRef());
 		order.setRequestID(r.requestID);
 		r.resultCode = traderApi.ReqOrderInsert(order, r.requestID);
 		return r;

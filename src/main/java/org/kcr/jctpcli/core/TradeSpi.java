@@ -1,8 +1,12 @@
 package org.kcr.jctpcli.core;
 
+import org.kr.jctp.jctpConstants;
 import org.kcr.jctpcli.util.Output;
 import org.kcr.jctpcli.util.Util;
 import org.kr.jctp.*;
+
+import java.util.*;
+
 
 public class TradeSpi extends CThostFtdcTraderSpi {
 	// 初始化标记
@@ -12,10 +16,17 @@ public class TradeSpi extends CThostFtdcTraderSpi {
 	// 持仓对象
 	private Hand hand;
 
+	private ArrayDeque<Instrument> toQueryInstruments;
+	private ArrayDeque<Instrument> toQueryInstrumentCommissions;
+	private HashMap<Integer, String> queryCommissionHash;
+
 	public TradeSpi(TraderCall _traderCall, Hand _hand) {
 		traderCall = _traderCall;
 		hand = _hand;
 		fence = new Fence();
+		toQueryInstruments = new ArrayDeque<>();
+		toQueryInstrumentCommissions = new ArrayDeque<>();
+		queryCommissionHash = new HashMap<>();
 	}
 
 	@Override
@@ -141,9 +152,135 @@ public class TradeSpi extends CThostFtdcTraderSpi {
 			if (Parameter.debugMode) {
 				Output.pTradingAccount("请求查询资金账户响应", pTradingAccount);
 			}
-			Util.sleepAvoidTooFreq();
-			System.out.println("开始查询持仓 --------------");
-			traderCall.queryInvestorPosition("");
+			// 查询合约
+			queryInstruments();
+		}
+	}
+
+	private void queryInstruments() {
+		var ins = Parameter.cnf.getInstruments();
+		var size = ins.length;
+		for (int i = 0; i < size; i++) {
+			toQueryInstruments.add(new Instrument(ins[i].getExchangeID(), ins[i].getInstrumentID()));
+		}
+		queryOneInstrument();
+	}
+
+	// 请求查询合约
+	private boolean queryOneInstrument() {
+		if (toQueryInstruments.size() == 0) {
+			return false;
+		}
+		var inst = toQueryInstruments.removeFirst();
+		Util.sleepAvoidTooFreq();
+		var r = traderCall.queryInstrument(inst.instrumentID, inst.exchangeID);
+		if (r.resultCode != 0) {
+			System.out.printf("query instrument %s error code:%d\n", inst.instrumentID, r.resultCode);
+		}
+		return true;
+	}
+
+	// 请求查询合约响应
+	@Override
+	public void OnRspQryInstrument(CThostFtdcInstrumentField pInstrument, CThostFtdcRspInfoField pRspInfo,
+								   int nRequestID, boolean bIsLast) {
+		if (Output.pResponse("请求查询合约响应头", pRspInfo, nRequestID, bIsLast)) {
+			return;
+		}
+		if (pInstrument == null) {
+			System.out.println("请求查询合约响应返回信息为空");
+			return;
+		}
+
+		if (pInstrument.getOptionsType() == 0) {
+			if (Parameter.debugMode) {
+				Output.pInstrument("请求查询合约响应", pInstrument);
+			}
+			// 设置保证金率 合约乘数 单位价格
+			onRspQryInstrument(pInstrument);
+			toQueryInstrumentCommissions.add(new Instrument(pInstrument.getExchangeID(), pInstrument.getInstrumentID()));
+		}
+
+		if (bIsLast) {
+			if (toQueryInstruments.size() == 0) {
+				fence.doneInstrument();
+				queryOneInstrumentCommission();
+			}else {
+				queryOneInstrument();
+			}
+		}
+	}
+
+	// 合约信息处理
+	private void onRspQryInstrument(CThostFtdcInstrumentField pInstrument) {
+		hand.lock();
+		try{
+			// 设置保证金率 合约乘数 单位价格
+			hand.upsertInstrument(pInstrument);
+		}catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+			hand.unlock();
+		}
+	}
+
+	// 请求查询合约
+	private boolean queryOneInstrumentCommission() {
+		if (toQueryInstrumentCommissions.size() == 0) {
+			return false;
+		}
+		var inst = toQueryInstrumentCommissions.removeFirst();
+		Util.sleepAvoidTooFreq();
+		var r = traderCall.queryInstrumentCommissionRate(inst);
+		if (r.resultCode != 0) {
+			System.out.printf("query instrument %s commission rate error code:%d\n", inst.instrumentID, r.resultCode);
+		}
+		queryCommissionHash.put(r.requestID, inst.instrumentID);
+		return true;
+	}
+
+	// 请求查询合约手续费率响应
+	@Override
+	public void OnRspQryInstrumentCommissionRate(CThostFtdcInstrumentCommissionRateField pInstrumentCommissionRate,
+												 CThostFtdcRspInfoField pRspInfo, int nRequestID, boolean bIsLast) {
+		if (Output.pResponse("请求查询合约手续费率响应", pRspInfo, nRequestID, bIsLast)) {
+			return;
+		}
+		if (pInstrumentCommissionRate == null) {
+			System.out.println("请求查询合约手续费率响应返回信息为空");
+			return;
+		}
+
+		if (Parameter.debugMode) {
+			Output.pInstrumentCommissionRate("请求查询合约手续费率响应", pInstrumentCommissionRate);
+		}
+
+		var instrumentID = queryCommissionHash.get(nRequestID);
+		if (instrumentID == null) {
+			System.out.printf("get instrument in query commission hash map but it's null:%s", nRequestID);
+			return;
+		}
+		// 查询手续费及率
+		try {
+			hand.lock();
+			var existInst = hand.getInstrument(instrumentID);
+			if (existInst == null) {
+				System.out.printf("get instrument in query commission rate but it's null:%s", instrumentID);
+				return;
+			}
+			existInst.setOpenCloseRatio(pInstrumentCommissionRate);
+		}finally {
+			hand.unlock();
+		}
+
+		if (bIsLast) {
+			if (toQueryInstrumentCommissions.size() == 0) {
+				fence.doneCommissionRate();
+				Util.sleepAvoidTooFreq();
+				traderCall.queryInvestorPosition("");
+			}else {
+				queryOneInstrumentCommission();
+			}
 		}
 	}
 
@@ -160,24 +297,34 @@ public class TradeSpi extends CThostFtdcTraderSpi {
 		}
 
 		if (Parameter.debugMode) {
+
 			Output.pInvestorPosition("请求查询投资者持仓响应", pInvestorPosition);
 		}
-		if (bIsLast) {
-			// 查询合约
-			queryInstruments();
-		}
-	}
 
-	private void queryInstruments() {
-		var ins = Parameter.cnf.getInstruments();
-		var size = ins.length;
-		for (int i = 0; i < size; i++) {
-			var instrumentID = ins[i].getInstrumentID();
-			Util.sleepAvoidTooFreq();
-			var r = traderCall.queryInstrument(instrumentID, ins[i].getExchangeID());
-			if (r.resultCode != 0) {
-				System.out.printf("query instrument %s error code:%d\n", instrumentID, r.resultCode);
+		try {
+			hand.lock();
+			var existInst = hand.getInstrument(pInvestorPosition.getInstrumentID());
+			if (existInst == null) {
+				System.out.println("get instrument in query investor position but it's null");
+				if (bIsLast) {
+					fence.doneInvestorPosition();
+				}
+				return;
 			}
+			var c = pInvestorPosition.getPosiDirection();
+			if (c == jctpConstants.THOST_FTDC_PD_Long) {
+				existInst.buyHold.feed(existInst, pInvestorPosition, true);
+			}else {
+				existInst.sellHold.feed(existInst, pInvestorPosition, false);
+			}
+		}finally {
+			hand.unlock();
+		}
+
+		if (bIsLast) {
+			fence.doneInvestorPosition();
+			// 查询合约
+			// queryInstruments();
 		}
 	}
 
@@ -432,94 +579,6 @@ public class TradeSpi extends CThostFtdcTraderSpi {
 		}
 
 		Output.pTrade("请求查询成交响应", pTrade);
-	}
-
-	// 请求查询合约响应
-	@Override
-	public void OnRspQryInstrument(CThostFtdcInstrumentField pInstrument, CThostFtdcRspInfoField pRspInfo,
-			int nRequestID, boolean bIsLast) {
-		if (Output.pResponse("请求查询合约响应", pRspInfo, nRequestID, bIsLast)) {
-			return;
-		}
-		if (pInstrument == null) {
-			System.out.println("请求查询合约响应返回信息为空");
-			return;
-		}
-
-		if (pInstrument.getOptionsType() == 0) {
-			// 设置保证金率 合约乘数 单位价格
-			onRspQryInstrument(pInstrument);
-			if (Parameter.debugMode) {
-				Output.pInstrument("请求查询合约响应", pInstrument);
-			}
-		}
-
-		if (bIsLast) {
-			fence.doneInstrument();
-
-			var existInst = hand.getInstrumentWithLock(pInstrument.getInstrumentID());
-			if (existInst == null) {
-				System.out.println("get instrument but it's null");
-				return;
-			}
-			Util.sleepAvoidTooFreq();
-			System.out.println("start to query commission rate --------------");
-			traderCall.queryInstrumentCommissionRate(existInst);
-		}
-
-		/*if (bIsLast) {
-			// 查询手续费
-			// System.out.println("start to query commission rate --------------");
-			// traderCall.queryInstrumentCommissionRate(hold.instrument);
-
-			// 查询手续费及率
-			hand.instrument.setRatio(1);
-			fence.doneCommissionRate();
-		}*/
-	}
-
-	// 合约信息处理
-	private void onRspQryInstrument(CThostFtdcInstrumentField pInstrument) {
-		hand.lock();
-		try{
-			// 设置保证金率 合约乘数 单位价格
-			hand.upsertInstrument(pInstrument);
-		}catch (Exception e) {
-			e.printStackTrace();
-		}finally {
-			hand.unlock();
-		}
-	}
-
-	// 请求查询合约手续费率响应
-	@Override
-	public void OnRspQryInstrumentCommissionRate(CThostFtdcInstrumentCommissionRateField pInstrumentCommissionRate,
-			CThostFtdcRspInfoField pRspInfo, int nRequestID, boolean bIsLast) {
-		if (Output.pResponse("请求查询合约手续费率响应", pRspInfo, nRequestID, bIsLast)) {
-			return;
-		}
-		if (pInstrumentCommissionRate == null) {
-			System.out.println("请求查询合约手续费率响应返回信息为空");
-			return;
-		}
-
-		// 查询手续费及率
-		try {
-			hand.lock();
-			var existInst = hand.getInstrument(pInstrumentCommissionRate.getInstrumentID());
-			if (existInst == null) {
-				System.out.println("get instrument in query commission rate but it's null");
-				return;
-			}
-			existInst.setOpenCloseRatio(pInstrumentCommissionRate);
-		}finally {
-			hand.unlock();
-		}
-		fence.doneCommissionRate();
-
-		if (Parameter.debugMode) {
-			Output.pInstrumentCommissionRate("请求查询合约手续费率响应", pInstrumentCommissionRate);
-		}
 	}
 
 	// 设置登录后相关参数
