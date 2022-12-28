@@ -310,12 +310,16 @@ class BrokerTest {
 
     private void printHold(String _title) {
         var instrument = hand.getInstrument("instrumentID");
+        var usedMoney =  500000-hand.available;
+        var delta = delta();
         System.out.println(_title);
         System.out.printf("available:%f\n", hand.available);
-        System.out.printf("use money:%f\n", 500000-hand.available);
+        System.out.printf("use money:%f\n", usedMoney);
         System.out.println("hold info:");
         System.out.print("delta:");
-        System.out.println(delta());
+        System.out.println(delta);
+        System.out.print("balance:");
+        System.out.println(delta+usedMoney);
 
         System.out.println(instrument);
         System.out.println("all order info:");

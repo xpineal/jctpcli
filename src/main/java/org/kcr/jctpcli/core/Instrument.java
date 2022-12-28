@@ -284,8 +284,8 @@ public class Instrument {
     // 开多
     private void OnOpenBuy(OrderInfo order) {
         // 实际的价格需要考虑手续费
-        if (!buyHold.addVol(order.orderItem.volume,  order.total(), openFeePrice(order.orderItem),
-                buyMargin(order.orderItem), openFee(order.orderItem))){
+        if (!buyHold.addVol(order.orderItem.volume,
+                order.total(), buyMargin(order.orderItem), openFee(order.orderItem))){
             System.out.printf("错误的开多订单信息:%s\n", order);
         }
     }
@@ -293,8 +293,8 @@ public class Instrument {
     // 开空
     private void OnOpenSell(OrderInfo order) {
         // 实际的价格需要考虑手续费
-        if (!sellHold.addVol(order.orderItem.volume,order.total(), -openFeePrice(order.orderItem),
-                sellMargin(order.orderItem), openFee(order.orderItem))){
+        if (!sellHold.addVol(order.orderItem.volume,
+                order.total(), sellMargin(order.orderItem), openFee(order.orderItem))){
             System.out.printf("错误的开空订单信息:%s\n", order);
         }
     }
@@ -308,8 +308,7 @@ public class Instrument {
         }
         return buyHold.reduceVol(order.orderItem.volume,
                 profile(order.orderItem.price-buyHold.price, order.orderItem.volume),
-                // 此处使用vtPrice计算，不含手续费价格
-                openFee(buyHold.vtPrice, order.orderItem.volume), closeFee(order.orderItem));
+                openFee(buyHold.price, order.orderItem.volume), closeFee(order.orderItem));
     }
 
     // 平空 -- 返回可用资金增量(包括返还的保证金+利润+开平手续费)
@@ -319,9 +318,7 @@ public class Instrument {
             return 0;
         }
         return sellHold.reduceVol(order.orderItem.volume,
-                profile(sellHold.price-order.orderItem.price, order.orderItem.volume),
-                // 此处使用vtPrice计算，不含手续费价格
-                openFee(sellHold.vtPrice, order.orderItem.volume), closeFee(order.orderItem));
+                profile(sellHold.price -order.orderItem.price, order.orderItem.volume),
+                openFee(sellHold.price, order.orderItem.volume), closeFee(order.orderItem));
     }
-
 }
