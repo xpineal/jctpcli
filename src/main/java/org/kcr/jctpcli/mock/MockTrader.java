@@ -4,6 +4,7 @@ import org.kcr.jctpcli.core.*;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+// 此类仅用于测试
 public class MockTrader implements ITrader {
 
     private final AtomicLong orderRefAtom;
@@ -49,12 +50,12 @@ public class MockTrader implements ITrader {
     }
 
     @Override
-    public TraderReq authenticate() {
+    public QueryReq authenticate() {
         return null;
     }
 
     @Override
-    public TraderReq login() {
+    public QueryReq login() {
         return null;
     }
 
@@ -64,22 +65,22 @@ public class MockTrader implements ITrader {
     }
 
     @Override
-    public TraderReq queryInstrumentCommissionRate(Instrument instrument) {
+    public QueryReq queryInstrumentCommissionRate(Instrument instrument) {
         return null;
     }
 
     @Override
-    public TraderReq queryInvestorPosition(String instrumentID) {
+    public QueryReq queryInvestorPosition(String instrumentID) {
         return null;
     }
 
     @Override
-    public TraderReq queryTradeAccount(String currencyID) {
+    public QueryReq queryTradeAccount(String currencyID) {
         return null;
     }
 
     @Override
-    public TraderReq queryInstrument(String instrumentID, String exchangeID) {
+    public QueryReq queryInstrument(String instrumentID, String exchangeID) {
         return null;
     }
 

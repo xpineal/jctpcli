@@ -62,7 +62,7 @@ public class TraderCall implements ITrader {
 	}
 
 	// 认证
-	public TraderReq authenticate() {
+	public QueryReq authenticate() {
 		var field = new CThostFtdcReqAuthenticateField();
 		field.setBrokerID(brokerID);
 		// field.setUserID(cnf.getAccountID());
@@ -76,7 +76,7 @@ public class TraderCall implements ITrader {
 	}
 
 	// 登录
-	public TraderReq login() {
+	public QueryReq login() {
 		var field = new CThostFtdcReqUserLoginField();
 		field.setBrokerID(brokerID);
 		field.setUserID(investorID);
@@ -155,7 +155,7 @@ public class TraderCall implements ITrader {
 		}
 	}
 
-	public TraderReq queryInstrumentCommissionRate(Instrument instrument) {
+	public QueryReq queryInstrumentCommissionRate(Instrument instrument) {
 		var qry = genQryInstrumentCommissionRate(instrument);
 		var r = genReq();
 		r.resultCode = traderApi.ReqQryInstrumentCommissionRate(qry, r.requestID);
@@ -163,7 +163,7 @@ public class TraderCall implements ITrader {
 	}
 
 	// 查询投资者持仓
-	public TraderReq queryInvestorPosition(String instrumentID) {
+	public QueryReq queryInvestorPosition(String instrumentID) {
 		var qry = genQryInvestorPosition(instrumentID);
 		var r = genReq();
 		r.resultCode = traderApi.ReqQryInvestorPosition(qry, r.requestID);
@@ -171,7 +171,7 @@ public class TraderCall implements ITrader {
 	}
 
 	// 查询资金账户
-	public TraderReq queryTradeAccount(String currencyID) {
+	public QueryReq queryTradeAccount(String currencyID) {
 		var qry = genQryTradeAccount(currencyID);
 		var r = genReq();
 		r.resultCode = traderApi.ReqQryTradingAccount(qry, r.requestID);
@@ -215,7 +215,7 @@ public class TraderCall implements ITrader {
 	}
 
 	// 查询合约
-	public TraderReq queryInstrument(String instrumentID, String exchangeID) {
+	public QueryReq queryInstrument(String instrumentID, String exchangeID) {
 		var qry = genQryInstrument(instrumentID, exchangeID);
 		var r = genReq();
 		r.resultCode = traderApi.ReqQryInstrument(qry, r.requestID);
@@ -341,8 +341,8 @@ public class TraderCall implements ITrader {
 	}
 
 	// 生成request
-	private TraderReq genReq() {
-		return new TraderReq(reqIDAtom.getAndIncrement());
+	private QueryReq genReq() {
+		return new QueryReq(reqIDAtom.getAndIncrement());
 	}
 
 }

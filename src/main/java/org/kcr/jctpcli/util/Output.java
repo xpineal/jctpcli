@@ -1,11 +1,11 @@
 package org.kcr.jctpcli.util;
 
-import org.kcr.jctpcli.core.TraderReq;
+import org.kcr.jctpcli.core.QueryReq;
 import org.kr.jctp.*;
 
 public class Output {
 	// 打印请求与同步返回值
-	public static void pRequest(String head, TraderReq r) {
+	public static void pRequest(String head, QueryReq r) {
 		System.out.printf("%s req:%d -- result:%d\n", head, r.requestID, r.resultCode);
 	}
 

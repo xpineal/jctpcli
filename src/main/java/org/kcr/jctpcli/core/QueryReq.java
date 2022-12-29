@@ -1,12 +1,10 @@
 package org.kcr.jctpcli.core;
 
-import org.kcr.jctpcli.util.Output;
-
-public class TraderReq {
+public class QueryReq {
 	public int requestID;
 	public int resultCode;
 
-	public TraderReq(int rID) {
+	public QueryReq(int rID) {
 		requestID = rID;
 	}
 

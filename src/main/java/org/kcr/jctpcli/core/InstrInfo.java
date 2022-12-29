@@ -1,5 +1,6 @@
 package org.kcr.jctpcli.core;
 
+// 此类仅供测试使用
 public class InstrInfo {
     public String exchangeID;
     public String instrumentID;

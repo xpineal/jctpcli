@@ -33,7 +33,7 @@ public class Hold {
     }
 
     // 不含手续费的总价格
-    public double totalPrice() {
+    public double totalAmount() {
         return price * vol;
     }
 
@@ -59,7 +59,7 @@ public class Hold {
     // orderPrice -- 订单总价格
     // feePrice -- 手续费价格
     public boolean addVol(int dVol, double orderPrice, double dMargin, double openFee) {
-        var totalVtPrice = totalPrice() + orderPrice;
+        var totalVtPrice = totalAmount() + orderPrice;
         var totalMargin = totalMargin() + dMargin;
         vol += dVol;
         openTotalFee += openFee;

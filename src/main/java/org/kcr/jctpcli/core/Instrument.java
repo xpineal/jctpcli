@@ -85,6 +85,7 @@ public class Instrument {
         }
     }
 
+    // 此函数仅供测试使用
     public void setInstrumentRatio(InstrInfo pInstrument) {
         // 额外的手续费从API中拿不到，需要从配置读取
         var addMargin = Parameter.cnf.getAddMargin();
@@ -139,6 +140,7 @@ public class Instrument {
         }
     }
 
+    // 此函数仅供测试使用
     public void setOpenCloseRatio(InstrInfo inst) {
         if (inst.openRatioByVolume > 0) {
             openRatioByVolume = inst.openRatioByVolume;
@@ -160,27 +162,6 @@ public class Instrument {
         }
     }
 
-    // 查询手续费及率
-    /*public void setRatio(CThostFtdcInstrumentCommissionRateField tc) {
-        // 开仓手续费率
-        openRatioByMoney = tc.getOpenRatioByMoney();
-        // 开仓手续费
-        openRatioByVolume = tc.getOpenRatioByVolume();
-        // 平仓手续费率
-        closeRatioByMoney = tc.getCloseRatioByMoney();
-        // 平仓手续费
-        closeRatioByVolume = tc.getCloseRatioByVolume();
-        // 平今仓手续费率
-        closeTodayRatioByMoney = tc.getCloseTodayRatioByMoney();
-        // 平今仓手续费
-        closeTodayRatioByVolume = tc.getCloseTodayRatioByVolume();
-    }
-
-    public void setRatio(double _ratio) {
-    	openRatioByVolume = _ratio;
-    	closeRatioByVolume = _ratio;
-    }*/
-     
     // 开多平多保证金
     public double buyMargin(double price, int volume) {
         return price * volumeMultiple * longMarginRatio * volume;
@@ -193,7 +174,7 @@ public class Instrument {
 
     // 做空平空保证金
     public double sellMargin(double price, int volume) {
-        return price * volumeMultiple * shortMarginRatio*volume;
+        return price * volumeMultiple * shortMarginRatio * volume;
     }
 
     // 做空平空保证金
@@ -217,15 +198,6 @@ public class Instrument {
     // 开仓手续费
     public double openFee(OrderItem order) {
         return openFee(order.price, order.volume);
-    }
-
-    // 开仓手续费转化成价格
-    public double openFeePrice(OrderItem order) {
-        return openFee(order) / volumeMultiple;
-    }
-
-    public double openFeePrice(double price, int volume) {
-        return openFee(price, volume) / volumeMultiple;
     }
 
     // 开多费用(保证金和手续费)
@@ -283,7 +255,6 @@ public class Instrument {
 
     // 开多
     private void OnOpenBuy(OrderInfo order) {
-        // 实际的价格需要考虑手续费
         if (!buyHold.addVol(order.orderItem.volume,
                 order.total(), buyMargin(order.orderItem), openFee(order.orderItem))){
             System.out.printf("错误的开多订单信息:%s\n", order);
@@ -292,14 +263,13 @@ public class Instrument {
 
     // 开空
     private void OnOpenSell(OrderInfo order) {
-        // 实际的价格需要考虑手续费
         if (!sellHold.addVol(order.orderItem.volume,
                 order.total(), sellMargin(order.orderItem), openFee(order.orderItem))){
             System.out.printf("错误的开空订单信息:%s\n", order);
         }
     }
 
-    // 平多 -- 返回可用资金增量(包括返还的保证金+利润+开平手续费)
+    // 平多 -- 返回可用资金增量(包括返还的保证金+利润)
     // 返回对应保证金+利润
     private double OnCloseBuy(OrderInfo order) {
         if (order.orderItem.volume > buyHold.vol) {
